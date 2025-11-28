@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "@corespeed/zypher": "jsr:@corespeed/zypher"
+  }
+}

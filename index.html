@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <body style="font-family: sans-serif; max-width: 600px; margin: 40px auto;">
+    <h1>Job Search AI Agent (Zypher)</h1>
+    <div id="chat"></div>
+
+    <input id="input" placeholder="Paste a job posting or ask anything..." style="width: 80%;" />
+    <button onclick="send()">Send</button>
+
+    <script>
+      async function send() {
+        const msg = document.getElementById("input").value;
+        if (!msg) return;
+
+        const res = await fetch("/", {
+          method: "POST",
+          body: JSON.stringify({ message: msg }),
+        });
+
+        const data = await res.json();
+        const chat = document.getElementById("chat");
+
+        chat.innerHTML += `<p><b>You:</b> ${msg}</p>`;
+        chat.innerHTML += `<p><b>AI:</b> ${data.reply}</p>`;
+      }
+    </script>
+  </body>
+</html>
