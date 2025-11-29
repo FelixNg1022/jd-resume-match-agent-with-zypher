@@ -13,10 +13,12 @@
     "npm:@aws-sdk/client-s3@^3.893.0": "3.940.0",
     "npm:@aws-sdk/s3-request-presigner@^3.893.0": "3.940.0",
     "npm:@modelcontextprotocol/sdk@^1.18.1": "1.23.0_zod@3.25.76_ajv@8.17.1_express@5.1.0",
+    "npm:@types/node@*": "24.2.0",
     "npm:chalk@^5.6.2": "5.6.2",
     "npm:diff@8.0.2": "8.0.2",
     "npm:openai@5.12.0": "5.12.0_zod@3.25.76",
     "npm:rxjs-for-await@1": "1.0.0_rxjs@7.8.2",
+    "npm:rxjs-for-await@1.0.0": "1.0.0_rxjs@7.8.2",
     "npm:rxjs@^7.8.2": "7.8.2",
     "npm:xstate@^5.22.0": "5.24.0",
     "npm:zod-to-json-schema@^3.24.6": "3.25.0_zod@3.25.76",
@@ -42,7 +44,7 @@
         "npm:diff",
         "npm:openai",
         "npm:rxjs",
-        "npm:rxjs-for-await",
+        "npm:rxjs-for-await@1",
         "npm:xstate",
         "npm:zod",
         "npm:zod-to-json-schema"
@@ -1105,6 +1107,12 @@
         "tslib"
       ]
     },
+    "@types/node@24.2.0": {
+      "integrity": "sha512-3xyG3pMCq3oYCNg7/ZP+E1ooTaGB4cG8JWRsqqOYQdbWNY4zbaV0Ennrd7stjiJEFZCaybcIgpTjJWHRfBSIDw==",
+      "dependencies": [
+        "undici-types"
+      ]
+    },
     "accepts@2.0.0": {
       "integrity": "sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==",
       "dependencies": [
@@ -1593,6 +1601,9 @@
         "mime-types"
       ]
     },
+    "undici-types@7.10.0": {
+      "integrity": "sha512-t5Fy/nfn+14LuOc2KNYg75vZqClpAiqscVvMygNnlsHBFpSXdJaYtXMcdNLpl/Qvc3P2cB3s6lOV51nqsFq4ag=="
+    },
     "unpipe@1.0.0": {
       "integrity": "sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ=="
     },
@@ -1624,7 +1635,8 @@
   },
   "workspace": {
     "dependencies": [
-      "jsr:@corespeed/zypher@*"
+      "jsr:@corespeed/zypher@*",
+      "npm:rxjs-for-await@1.0.0"
     ]
   }
 }

@@ -1,0 +1,7 @@
+Backend Engineer (Go/TypeScript)
+Location: Vancouver, BC
+Requirements:
+- 3+ years backend engineering experience.
+- Strong in Go and TypeScript.
+- Experience with SQL (Postgres), Docker, Kubernetes, AWS.
+- Familiarity with CI/CD and testing.

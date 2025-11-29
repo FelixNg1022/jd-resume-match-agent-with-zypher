@@ -1,0 +1,9 @@
+Jeff Bezos
+Experience:
+- Backend Intern at Acme (6 months)
+  - Built microservices in Go, wrote REST APIs and integrated with Postgres.
+  - Dockerized services and authored Kubernetes manifests.
+Skills:
+Go, TypeScript, SQL, Docker, Kubernetes, Git, REST APIs
+Education:
+BSc Computer Science, University of British Columbia
