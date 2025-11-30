@@ -309,9 +309,16 @@
         <button id="analyzeBtn" onclick="handleSubmit()">Analyze Match</button>
       </div>
 
-      <div class="results" id="results" style="display: none;">
-        <h2>Analysis Results</h2>
-        <div id="out"></div>
+      <!-- Analysis Results Section -->
+      <div class="results" id="analysisResults" style="display: none;">
+        <h2>📊 Analysis Results</h2>
+        <div id="analysisOut"></div>
+      </div>
+      
+      <!-- Job Search Results Section -->
+      <div class="results" id="jobSearchResults" style="display: none;">
+        <h2>🔍 Job Search Results</h2>
+        <div id="jobSearchOut"></div>
       </div>
       
       <!-- Job Search Options (shown after analysis or when JD is empty) -->
@@ -427,30 +434,42 @@
         const jd = document.getElementById("jd").value.trim();
         const resume = document.getElementById("resume").value.trim();
         const btn = document.getElementById("analyzeBtn");
-        const out = document.getElementById("out");
-        const results = document.getElementById("results");
+        const analysisOut = document.getElementById("analysisOut");
+        const analysisResults = document.getElementById("analysisResults");
         const jobSearchSection = document.getElementById("jobSearchSection");
+        const resumeTextarea = document.getElementById("resume");
         
+        // Warn user of empty resume input with better UX
         if (!resume) {
-          alert("Please paste your resume (required).");
+          // Highlight the resume textarea
+          resumeTextarea.style.borderColor = "#ef4444";
+          resumeTextarea.focus();
+          alert("⚠️ Please paste your resume or upload a PDF file (required).");
+          // Reset border color after a delay
+          setTimeout(() => {
+            resumeTextarea.style.borderColor = "#e2e8f0";
+          }, 3000);
           return;
         }
         
-        // If JD is empty, go straight to job search section
+        // Scenario 1: Empty JD, resume input -> job search
         if (!jd) {
           jobSearchSection.style.display = "block";
-          results.style.display = "none";
+          analysisResults.style.display = "none";
           // Scroll to job search section
           jobSearchSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
           return;
         }
         
-        // Both JD and resume provided - do analysis
+        // Scenario 5: Multiple analyze matches - Both JD and resume provided, do analysis
+        // Each new analysis will replace the previous one
         btn.disabled = true;
         btn.textContent = "Analyzing Match...";
-        results.style.display = "block";
-        jobSearchSection.style.display = "none";
-        out.innerHTML = '<div class="loading"><div class="spinner"></div><span>🤖 AI agent is analyzing your resume match...</span></div>';
+        analysisResults.style.display = "block";
+        // Keep job search section visible if it was already shown
+        jobSearchSection.style.display = "block";
+        // Clear previous analysis results and show loading
+        analysisOut.innerHTML = '<div class="loading"><div class="spinner"></div><span>🤖 AI agent is analyzing your resume match...</span></div>';
         
         try {
           const res = await fetch("/analyze", {
@@ -466,21 +485,21 @@
           const data = await res.json();
           
           if (data.error) {
-            out.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+            analysisOut.innerHTML = `<div class="error">Error: ${data.error}</div>`;
           } else if (data.analysis) {
             lastAnalysis = data.analysis;
             displayResults(data.analysis);
-            // Show job search section after analysis (it's now below results in HTML)
+            // Show job search section after analysis (both results can be visible)
             jobSearchSection.style.display = "block";
             // Scroll to top of Analysis Results section
             setTimeout(() => {
-              results.scrollIntoView({ behavior: "smooth", block: "start" });
+              analysisResults.scrollIntoView({ behavior: "smooth", block: "start" });
             }, 100);
           } else {
-            out.innerHTML = `<div class="error">Unexpected response format</div>`;
+            analysisOut.innerHTML = `<div class="error">Unexpected response format</div>`;
           }
         } catch (err) {
-          out.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+          analysisOut.innerHTML = `<div class="error">Error: ${err.message}</div>`;
         } finally {
           btn.disabled = false;
           const jd = document.getElementById("jd").value.trim();
@@ -489,7 +508,7 @@
       }
       
       function displayResults(analysis) {
-        const out = document.getElementById("out");
+        const out = document.getElementById("analysisOut");
         
         // Calculate color based on score
         let scoreColor = "#ef4444"; // red
@@ -549,14 +568,6 @@
           `;
         }
         
-        // Add prompt to search for jobs
-        html += `
-          <div class="result-card" style="background: #eff6ff; border-left: 4px solid #2563eb; margin-top: 20px;">
-            <div class="section-title">🔍 Next Step: Search for Matching Jobs</div>
-            <p style="margin: 8px 0;">Want to find jobs that match your resume? Scroll down to search the web for matching job postings.</p>
-          </div>
-        `;
-        
         // Add raw JSON view (collapsible)
         html += `
           <details style="margin-top: 20px;">
@@ -580,21 +591,35 @@
         const location = document.getElementById("location").value.trim();
         const keywords = document.getElementById("keywords").value.trim();
         const btn = document.getElementById("searchBtn");
-        const out = document.getElementById("out");
-        const results = document.getElementById("results");
+        const jobSearchOut = document.getElementById("jobSearchOut");
+        const jobSearchResults = document.getElementById("jobSearchResults");
+        const resumeTextarea = document.getElementById("resume");
         
+        // Scenario 4: Warn user of empty resume input
         if (!resume) {
-          alert("Please paste your resume.");
+          // Highlight the resume textarea
+          resumeTextarea.style.borderColor = "#ef4444";
+          resumeTextarea.focus();
+          alert("⚠️ Please paste your resume or upload a PDF file to search for jobs.");
+          // Reset border color after a delay
+          setTimeout(() => {
+            resumeTextarea.style.borderColor = "#e2e8f0";
+          }, 3000);
           return;
         }
         
+        // Scenario 3: Job search with missing keyword inputs - All inputs are optional
+        // role, location, and keywords can be empty - the backend handles this gracefully
+        
+        // Scenario 2: Job search after a job search - Replace previous results
         btn.disabled = true;
         btn.textContent = "Searching...";
-        results.style.display = "block";
-        out.innerHTML = '<div class="loading"><div class="spinner"></div><span>🔍 Searching for jobs and analyzing matches... This may take a minute.</span></div>';
+        jobSearchResults.style.display = "block";
+        // Clear previous job search results and show loading
+        jobSearchOut.innerHTML = '<div class="loading"><div class="spinner"></div><span>🔍 Searching for jobs and analyzing matches... This may take a minute.</span></div>';
         
         // Scroll to show loading indicator
-        results.scrollIntoView({ behavior: "smooth", block: "start" });
+        jobSearchResults.scrollIntoView({ behavior: "smooth", block: "start" });
         
         try {
           const res = await fetch("/search-jobs", {
@@ -615,14 +640,14 @@
           const data = await res.json();
           
           if (data.error) {
-            out.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+            jobSearchOut.innerHTML = `<div class="error">Error: ${data.error}</div>`;
           } else if (data.result) {
             displayJobResults(data.result);
           } else {
-            out.innerHTML = `<div class="error">Unexpected response format</div>`;
+            jobSearchOut.innerHTML = `<div class="error">Unexpected response format</div>`;
           }
         } catch (err) {
-          out.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+          jobSearchOut.innerHTML = `<div class="error">Error: ${err.message}</div>`;
         } finally {
           btn.disabled = false;
           btn.textContent = "🔍 Search & Rank Jobs";
@@ -630,7 +655,7 @@
       }
       
       function displayJobResults(result) {
-        const out = document.getElementById("out");
+        const out = document.getElementById("jobSearchOut");
         
         if (!result.jobs || result.jobs.length === 0) {
           out.innerHTML = `
