@@ -6,7 +6,7 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 
 ### Core Capabilities
 
-- **AI-Powered Skill Matching** - Leverages Groq/OpenAI via Zypher framework for intelligent analysis
+- **AI-Powered Skill Matching** - Leverages LLaMA (Meta's open-source LLM) via Groq inference API for intelligent analysis
 - **Fit Score Calculation** - Quantified match score (0-100) based on technical skill alignment
 - **Smart Job Discovery** - Web search powered by Tavily API to find relevant opportunities
 - **Intelligent Filtering** - Automatically excludes job boards, surfaces direct company postings only
@@ -38,10 +38,12 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 2. **Configure API Keys**:
 
    **Groq (Recommended - Free & Fast)**
+   
+   Uses LLaMA (Meta's open-source LLM) with Groq's high-performance inference API.
 
    ```bash
    export GROQ_API_KEY="gsk-your-groq-api-key-here"
-   export GROQ_MODEL="llama-3.1-8b-instant"  # Optional
+   export GROQ_MODEL="llama-3.1-8b-instant"  # Optional - defaults to LLaMA 3.1 8B Instant
    ```
 
    Get your key: <https://console.groq.com/keys>
@@ -113,7 +115,8 @@ jobmatch-ai/
 **Core Framework**
 
 - **Zypher** (`@corespeed/zypher`) - CoreSpeed's AI agent framework
-- **Groq API** - Primary LLM provider (fast, free tier)
+- **LLaMA** (Meta's open-source LLM) - Large language model for intelligent analysis
+- **Groq API** - High-performance inference provider for LLaMA (fast, free tier available)
 - **Tavily API** - AI-optimized web search with content extraction
 
 **Runtime & Language**
@@ -134,7 +137,9 @@ jobmatch-ai/
    - Extracted text is populated into the resume textarea
 
 2. **Agent Initialization**
-   - Creates Zypher context and initializes model provider (Groq preferred, OpenAI fallback)
+   - Creates Zypher context and initializes model provider
+   - Uses LLaMA (Meta's open-source LLM) via Groq inference API for fast, cost-effective analysis
+   - Falls back to OpenAI if Groq API key is not configured
    - Configures streaming support for real-time responses
 
 3. **Analysis Pipeline**
@@ -167,7 +172,7 @@ jobmatch-ai/
 
 ## 📋 Important Notes
 
-- **Default Behavior:** Groq is used if `GROQ_API_KEY` is set; otherwise falls back to OpenAI
+- **Default Behavior:** LLaMA (Meta's open-source LLM) via Groq inference API is used if `GROQ_API_KEY` is set; otherwise falls back to OpenAI
 - **Skill Filtering:** Only technical skills are analyzed (benefits, salary, etc. are excluded)
 - **Job Board Filtering:** Filters by job board name (e.g., "glassdoor") to catch all domain variations (.com, .ca, .co.uk, etc.)
 - **Score Variance:** LLM probabilistic nature may cause ±3-5 point variations (expected behavior)
@@ -185,6 +190,7 @@ jobmatch-ai/
 
 - [Zypher Framework](https://zypher.corespeed.io)
 - [Deno Documentation](https://deno.land/docs)
+- [LLaMA (Meta AI)](https://ai.meta.com/llama/)
 - [Groq API Reference](https://console.groq.com/docs)
 - [Tavily API Docs](https://docs.tavily.com)
 
