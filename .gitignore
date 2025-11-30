@@ -1,6 +1,6 @@
 # Deno
 .deno/
-deno.lock
+# Note: deno.lock is kept in version control for reproducible builds
 
 # Environment variables
 .env
