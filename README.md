@@ -1,4 +1,4 @@
-# 🎯 JD ↔ Resume Match Agent
+# 🎯 JobMatch AI
 
 An AI-powered job matching agent built with **CoreSpeed's Zypher framework** that intelligently analyzes job descriptions and resumes to provide actionable insights and find matching opportunities.
 
@@ -85,7 +85,7 @@ Open <http://localhost:8000> in your browser.
 ### Project Structure
 
 ```text
-jd-resume-match-agent-with-zypher/
+jobmatch-ai/
 ├── src/
 │   ├── agent.ts              # Core Zypher agent logic
 │   ├── server.ts             # HTTP server & routing
@@ -152,7 +152,7 @@ jd-resume-match-agent-with-zypher/
 
 ## 🎯 Assessment Deliverables
 
-✅ **Repository:** <https://github.com/FelixNg1022/jd-resume-match-agent-with-zypher.git>  
+✅ **Repository:** <https://github.com/FelixNg1022/jobmatch-ai.git>  
 ✅ **Run Instructions:** See Quick Start section above  
 ✅ **Demo Video:** [Link to your screen recording]
 

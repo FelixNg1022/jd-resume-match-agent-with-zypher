@@ -421,6 +421,7 @@ export async function searchAndRankJobs(
       "dice.com", // Dice
       "builtin.com", // BuiltIn
       "builtinsf.com", // BuiltIn SF
+      "builtinvancouver.org", // BuiltIn Vancouver
       "crunchboard.com", // Crunchboard (TechCrunch)
       "hired.com", // Hired
       "arc.dev", // Arc.dev
