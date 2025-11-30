@@ -7,6 +7,7 @@
     "npm:rxjs": "npm:rxjs@^7.0.0"
   },
   "tasks": {
+    "run:cli": "deno run --config deno.json -A src/main.ts",
     "run:server": "deno run --config deno.json -A src/server.ts"
   }
 }
