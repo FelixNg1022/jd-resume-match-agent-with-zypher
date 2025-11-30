@@ -2,10 +2,11 @@
   "imports": {
     "@corespeed/zypher": "jsr:@corespeed/zypher",
     "npm:rxjs-for-await": "npm:rxjs-for-await@1.0.0",
-    "rxjs-for-await": "npm:rxjs-for-await@1.0.0"
+    "rxjs-for-await": "npm:rxjs-for-await@1.0.0",
+    "npm:openai": "npm:openai@^4.0.0",
+    "npm:rxjs": "npm:rxjs@^7.0.0"
   },
   "tasks": {
-    "run:cli": "deno run --config deno.json -A src/main.ts",
     "run:server": "deno run --config deno.json -A src/server.ts"
   }
 }

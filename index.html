@@ -77,6 +77,21 @@
       .loading {
         color: #64748b;
         font-style: italic;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .spinner {
+        border: 3px solid #e2e8f0;
+        border-top: 3px solid #2563eb;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
       }
       .results {
         margin-top: 30px;
@@ -168,6 +183,95 @@
         font-size: 13px;
         line-height: 1.5;
       }
+      .tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        border-bottom: 2px solid #e2e8f0;
+      }
+      .tab-btn {
+        padding: 12px 24px;
+        background: transparent;
+        color: #64748b;
+        border: none;
+        border-bottom: 3px solid transparent;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-bottom: -2px;
+      }
+      .tab-btn:hover {
+        color: #2563eb;
+      }
+      .tab-btn.active {
+        color: #2563eb;
+        border-bottom-color: #2563eb;
+      }
+      .tab-content {
+        animation: fadeIn 0.3s;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .job-card {
+        background: white;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        transition: all 0.2s;
+      }
+      .job-card:hover {
+        border-color: #2563eb;
+        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+      }
+      .job-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 12px;
+      }
+      .job-title {
+        font-size: 1.2em;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 4px;
+      }
+      .job-company {
+        color: #64748b;
+        font-size: 0.9em;
+      }
+      .job-score {
+        font-size: 1.5em;
+        font-weight: bold;
+        padding: 8px 16px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      .job-url {
+        color: #2563eb;
+        text-decoration: none;
+        font-size: 0.9em;
+        word-break: break-all;
+      }
+      .job-url:hover {
+        text-decoration: underline;
+      }
+      .job-description {
+        color: #475569;
+        font-size: 0.95em;
+        line-height: 1.6;
+        margin: 12px 0;
+        max-height: 150px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      input {
+        font-family: inherit;
+        font-size: 14px;
+      }
     </style>
   </head>
   <body>
@@ -175,37 +279,90 @@
       <h1>🎯 JD ↔ Resume Match Agent</h1>
       <p class="subtitle">Powered by CoreSpeed's Zypher AI Agent Framework</p>
       
-      <label for="jd">Job Description</label>
-      <textarea id="jd" placeholder="Paste the full job description here..."></textarea>
+      <!-- Unified Input Form -->
+      <div>
+        <label for="resume">Resume (Plain Text) <span style="color: #ef4444;">*</span></label>
+        <textarea id="resume" placeholder="Paste your resume text here... (Required)" required></textarea>
 
-      <label for="resume">Resume (Plain Text)</label>
-      <textarea id="resume" placeholder="Paste your resume text here..."></textarea>
+        <label for="jd">Job Description (Optional)</label>
+        <textarea id="jd" placeholder="Paste the full job description here... (Leave empty to search for matching jobs instead)"></textarea>
+        <p style="color: #64748b; font-size: 0.9em; margin-top: -15px; margin-bottom: 20px;">
+          💡 <strong>Tip:</strong> If you leave this empty, we'll search the web for jobs that match your resume.
+        </p>
 
-      <button id="analyzeBtn" onclick="analyze()">Analyze Match</button>
+        <button id="analyzeBtn" onclick="handleSubmit()">Analyze Match</button>
+      </div>
 
       <div class="results" id="results" style="display: none;">
         <h2>Analysis Results</h2>
         <div id="out"></div>
       </div>
+      
+      <!-- Job Search Options (shown after analysis or when JD is empty) -->
+      <div id="jobSearchSection" style="display: none; margin-top: 30px; padding-top: 30px; border-top: 2px solid #e2e8f0;">
+        <h3 style="margin-top: 0;">🔍 Search for Matching Jobs</h3>
+        <p style="color: #64748b; margin-bottom: 20px;">Search the web for jobs that match your resume:</p>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+          <div>
+            <label for="role">Role/Title</label>
+            <input type="text" id="role" placeholder="e.g., Software Engineer" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px;">
+          </div>
+          <div>
+            <label for="location">Location (Optional)</label>
+            <input type="text" id="location" placeholder="e.g., San Francisco, CA" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px;">
+          </div>
+        </div>
+        
+        <label for="keywords">Additional Keywords (Optional)</label>
+        <input type="text" id="keywords" placeholder="e.g., remote, python, kubernetes" style="width: 100%; padding: 10px; border: 2px solid #e2e8f0; border-radius: 6px; margin-bottom: 20px;">
+        
+        <button id="searchBtn" onclick="searchJobs()">🔍 Search & Rank Jobs</button>
+      </div>
     </div>
 
     <script>
-      async function analyze() {
+      let lastAnalysis = null; // Store last analysis result
+      
+      // Update button text based on JD input
+      document.getElementById("jd").addEventListener("input", function() {
+        const jd = this.value.trim();
+        const btn = document.getElementById("analyzeBtn");
+        if (!jd) {
+          btn.textContent = "🔍 Search Jobs";
+        } else {
+          btn.textContent = "Analyze Match";
+        }
+      });
+      
+      async function handleSubmit() {
         const jd = document.getElementById("jd").value.trim();
         const resume = document.getElementById("resume").value.trim();
         const btn = document.getElementById("analyzeBtn");
         const out = document.getElementById("out");
         const results = document.getElementById("results");
+        const jobSearchSection = document.getElementById("jobSearchSection");
         
-        if (!jd || !resume) {
-          alert("Please paste both the job description and resume.");
+        if (!resume) {
+          alert("Please paste your resume (required).");
           return;
         }
         
+        // If JD is empty, go straight to job search section
+        if (!jd) {
+          jobSearchSection.style.display = "block";
+          results.style.display = "none";
+          // Scroll to job search section
+          jobSearchSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          return;
+        }
+        
+        // Both JD and resume provided - do analysis
         btn.disabled = true;
-        btn.textContent = "Analyzing...";
+        btn.textContent = "Analyzing Match...";
         results.style.display = "block";
-        out.innerHTML = '<div class="loading">🤖 AI agent is analyzing your resume match...</div>';
+        jobSearchSection.style.display = "none";
+        out.innerHTML = '<div class="loading"><div class="spinner"></div><span>🤖 AI agent is analyzing your resume match...</span></div>';
         
         try {
           const res = await fetch("/analyze", {
@@ -223,7 +380,14 @@
           if (data.error) {
             out.innerHTML = `<div class="error">Error: ${data.error}</div>`;
           } else if (data.analysis) {
+            lastAnalysis = data.analysis;
             displayResults(data.analysis);
+            // Show job search section after analysis (it's now below results in HTML)
+            jobSearchSection.style.display = "block";
+            // Scroll to top of Analysis Results section
+            setTimeout(() => {
+              results.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 100);
           } else {
             out.innerHTML = `<div class="error">Unexpected response format</div>`;
           }
@@ -231,7 +395,8 @@
           out.innerHTML = `<div class="error">Error: ${err.message}</div>`;
         } finally {
           btn.disabled = false;
-          btn.textContent = "Analyze Match";
+          const jd = document.getElementById("jd").value.trim();
+          btn.textContent = jd ? "Analyze Match" : "🔍 Search Jobs";
         }
       }
       
@@ -296,6 +461,14 @@
           `;
         }
         
+        // Add prompt to search for jobs
+        html += `
+          <div class="result-card" style="background: #eff6ff; border-left: 4px solid #2563eb; margin-top: 20px;">
+            <div class="section-title">🔍 Next Step: Search for Matching Jobs</div>
+            <p style="margin: 8px 0;">Want to find jobs that match your resume? Scroll down to search the web for matching job postings.</p>
+          </div>
+        `;
+        
         // Add raw JSON view (collapsible)
         html += `
           <details style="margin-top: 20px;">
@@ -311,6 +484,155 @@
         const div = document.createElement("div");
         div.textContent = text;
         return div.innerHTML;
+      }
+      
+      async function searchJobs() {
+        const resume = document.getElementById("resume").value.trim();
+        const role = document.getElementById("role").value.trim();
+        const location = document.getElementById("location").value.trim();
+        const keywords = document.getElementById("keywords").value.trim();
+        const btn = document.getElementById("searchBtn");
+        const out = document.getElementById("out");
+        const results = document.getElementById("results");
+        
+        if (!resume) {
+          alert("Please paste your resume.");
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = "Searching...";
+        results.style.display = "block";
+        out.innerHTML = '<div class="loading"><div class="spinner"></div><span>🔍 Searching for jobs and analyzing matches... This may take a minute.</span></div>';
+        
+        // Scroll to show loading indicator
+        results.scrollIntoView({ behavior: "smooth", block: "start" });
+        
+        try {
+          const res = await fetch("/search-jobs", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              resume,
+              role: role || undefined,
+              location: location || undefined,
+              keywords: keywords || undefined,
+            })
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+          }
+          
+          const data = await res.json();
+          
+          if (data.error) {
+            out.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+          } else if (data.result) {
+            displayJobResults(data.result);
+          } else {
+            out.innerHTML = `<div class="error">Unexpected response format</div>`;
+          }
+        } catch (err) {
+          out.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "🔍 Search & Rank Jobs";
+        }
+      }
+      
+      function displayJobResults(result) {
+        const out = document.getElementById("out");
+        
+        if (!result.jobs || result.jobs.length === 0) {
+          out.innerHTML = `
+            <div class="result-card">
+              <p>No jobs found. Try adjusting your search criteria.</p>
+              <p><small>Search query: ${escapeHtml(result.searchQuery)}</small></p>
+            </div>
+          `;
+          return;
+        }
+        
+        // Check if using mock data (URLs are "#")
+        const isMockData = result.jobs.some(job => !job.url || job.url === "#");
+        const mockDataWarning = isMockData ? `
+          <div class="result-card" style="background: #fef3c7; border-left: 4px solid #f59e0b; margin-bottom: 15px;">
+            <div class="section-title">⚠️ Demo Mode</div>
+            <p style="margin: 8px 0; color: #92400e;">These are mock job listings for demonstration. Set <code>TAVILY_API_KEY</code> environment variable for real job search results.</p>
+          </div>
+        ` : '';
+        
+        let html = `
+          ${mockDataWarning}
+          <div class="result-card">
+            <div class="section-title">🔍 Search Results</div>
+            <p>Found ${result.totalFound} jobs, showing top ${result.jobs.length} matches:</p>
+            <p><small>Query: ${escapeHtml(result.searchQuery)}</small></p>
+          </div>
+        `;
+        
+        result.jobs.forEach((job, index) => {
+          const score = job.score || 0;
+          let scoreColor = "#ef4444";
+          if (score >= 70) scoreColor = "#10b981";
+          else if (score >= 50) scoreColor = "#f59e0b";
+          
+          html += `
+            <div class="job-card">
+              <div class="job-header">
+                <div style="flex: 1;">
+                  <div class="job-title">${escapeHtml(job.title)}</div>
+                  ${job.company ? `<div class="job-company">${escapeHtml(job.company)}</div>` : ''}
+                </div>
+                <div class="job-score" style="color: ${scoreColor}; background: ${scoreColor}20;">
+                  ${score}/100
+                </div>
+              </div>
+              
+              <div class="job-description">
+                ${escapeHtml(job.description.substring(0, 300))}${job.description.length > 300 ? '...' : ''}
+              </div>
+              
+              ${job.matchDetails ? `
+                <div style="margin: 12px 0;">
+                  ${job.matchDetails.matched_skills && job.matchDetails.matched_skills.length > 0 ? `
+                    <div style="margin-bottom: 8px;">
+                      <strong>✅ Matched:</strong>
+                      <div class="skills-list" style="margin-top: 4px;">
+                        ${job.matchDetails.matched_skills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join("")}
+                      </div>
+                    </div>
+                  ` : ''}
+                  ${job.matchDetails.missing_skills && job.matchDetails.missing_skills.length > 0 ? `
+                    <div>
+                      <strong>❌ Missing:</strong>
+                      <div class="skills-list" style="margin-top: 4px;">
+                        ${job.matchDetails.missing_skills.slice(0, 5).map(s => `<span class="skill-tag missing">${escapeHtml(s)}</span>`).join("")}
+                        ${job.matchDetails.missing_skills.length > 5 ? `<span style="color: #64748b;">+${job.matchDetails.missing_skills.length - 5} more</span>` : ''}
+                      </div>
+                    </div>
+                  ` : ''}
+                </div>
+              ` : ''}
+              
+              ${job.url && job.url !== "#" && job.url !== "about:blank" ? `
+                <a href="${escapeHtml(job.url)}" target="_blank" class="job-url">🔗 View Job Posting →</a>
+              ` : `
+                <span class="job-url" style="color: #94a3b8; cursor: not-allowed;">🔗 Job URL not available</span>
+              `}
+            </div>
+          `;
+        });
+        
+        html += `
+          <details style="margin-top: 20px;">
+            <summary style="cursor: pointer; color: #64748b; font-size: 0.9em;">View Raw JSON</summary>
+            <pre>${escapeHtml(JSON.stringify(result, null, 2))}</pre>
+          </details>
+        `;
+        
+        out.innerHTML = html;
       }
     </script>
   </body>
