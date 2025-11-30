@@ -152,7 +152,7 @@ jobmatch-ai/
 
 ## 🎯 Assessment Deliverables
 
-✅ **Repository:** <https://github.com/FelixNg1022/jobmatch-ai.git>  
+✅ **Repository:** <https://github.com/FelixNg1022/JobMatch-AI.git>  
 ✅ **Run Instructions:** See Quick Start section above  
 ✅ **Demo Video:** [Link to your screen recording]
 
