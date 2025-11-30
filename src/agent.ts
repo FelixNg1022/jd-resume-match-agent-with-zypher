@@ -159,8 +159,6 @@ Output JSON only:
         try {
           const jsonStr = jsonMatch[1] || jsonMatch[0];
           const parsedJson = JSON.parse(jsonStr);
-          console.log("✅ Successfully parsed JSON from LLM response");
-          console.log(`📊 Parsed fields: score=${parsedJson.score}, matched=${parsedJson.matched_skills?.length || 0}, missing=${parsedJson.missing_skills?.length || 0}, suggestions=${parsedJson.suggestions?.length || 0}`);
           
           // Check if parsed JSON contains an error
           if (parsedJson.reply && parsedJson.reply.includes("(error)")) {
@@ -269,11 +267,6 @@ Output JSON only:
         suggestions,
         short_summary: `Estimated fit: ${score}/100. Matched ${matched.length} skills, missing ${missing.length} skills.`
       };
-    } else {
-      console.log("✅ Agent analysis completed successfully");
-      if (parsed && parsed.suggestions) {
-        console.log(`💡 LLM generated ${parsed.suggestions.length} suggestions`);
-      }
     }
 
     return parsed;
@@ -315,6 +308,17 @@ export interface JobSearchPreferences {
   role?: string;
   location?: string;
   keywords?: string;
+}
+
+export interface ResumeStrengthAnalysis {
+  overall_score: number;
+  ats_score: number;
+  strengths: string[];
+  weaknesses: string[];
+  improvement_suggestions: string[];
+  summary: string;
+  skill_diversity_score: number;
+  experience_depth_score: number;
 }
 
 export interface JobSearchResult {
@@ -496,5 +500,246 @@ export async function searchAndRankJobs(
       totalFound: 0,
       searchQuery: `${preferences.role || "jobs"}${preferences.location ? ` ${preferences.location}` : ""}`,
     };
+  }
+}
+
+/**
+ * Analyze resume strength without a job description
+ * Provides overall resume quality assessment
+ */
+export async function analyzeResumeStrength(resumeText: string): Promise<ResumeStrengthAnalysis> {
+  try {
+    const zypherContext = await createZypherContext(Deno.cwd());
+    const provider = getProviderFromEnv();
+    if (!provider) {
+      throw new Error("Failed to create model provider");
+    }
+    
+    const agent = new ZypherAgent(zypherContext, provider);
+    
+    const prompt = `Analyze this resume and provide a comprehensive strength assessment:
+
+Resume:
+${resumeText}
+
+Evaluate the resume on multiple dimensions:
+1. Overall Quality (0-100): Structure, clarity, professionalism, impact
+2. ATS Compatibility (0-100): Formatting, keywords, structure for Applicant Tracking Systems
+3. Skill Diversity (0-100): Range and variety of technical skills
+4. Experience Depth (0-100): Depth of experience, achievements, quantifiable results
+
+Provide:
+- Overall score (weighted average)
+- ATS score
+- Top 3-5 strengths
+- Top 3-5 weaknesses
+- 5-7 actionable improvement suggestions
+- Brief summary (2-3 sentences)
+- Skill diversity score
+- Experience depth score
+
+Output JSON only:
+{
+  "overall_score": <0-100 integer>,
+  "ats_score": <0-100 integer>,
+  "strengths": [<array of 3-5 key strengths>],
+  "weaknesses": [<array of 3-5 key weaknesses>],
+  "improvement_suggestions": [<array of 5-7 actionable suggestions>],
+  "summary": "<2-3 sentence summary of resume quality>",
+  "skill_diversity_score": <0-100 integer>,
+  "experience_depth_score": <0-100 integer>
+}`;
+
+    let resultText = "";
+    type ContentBlock = { type?: string; text?: string };
+    type MessageLike = { content?: ContentBlock[] };
+    type TaskEventLike = { type: string; content?: string; message?: MessageLike };
+    
+    const groqKey = Deno.env.get("GROQ_API_KEY");
+    const modelName = groqKey 
+      ? (Deno.env.get("GROQ_MODEL") || "llama-3.1-8b-instant")
+      : (Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini");
+    
+    const taskEvents = agent.runTask(prompt, modelName, undefined, { maxIterations: 3 });
+    for await (const ev of eachValueFrom(taskEvents)) {
+      const e = ev as TaskEventLike;
+      if (e.type === "text") {
+        resultText += e.content || "";
+      } else if (e.type === "message") {
+        const msg = e.message as MessageLike;
+        const blocks = msg?.content || [] as ContentBlock[];
+        for (const b of blocks) {
+          if (b?.type === "text" && typeof b.text === "string") {
+            resultText += b.text;
+          }
+        }
+      } else if (e.type === "error") {
+        console.error("Task event error:", e);
+        throw new Error(`Agent task error: ${JSON.stringify(e)}`);
+      }
+    }
+    
+    // Parse JSON response
+    let analysis: ResumeStrengthAnalysis | null = null;
+    if (resultText.length > 0) {
+      try {
+        const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (parsed.overall_score !== undefined) {
+            analysis = {
+              overall_score: Math.min(100, Math.max(0, parsed.overall_score || 0)),
+              ats_score: Math.min(100, Math.max(0, parsed.ats_score || 0)),
+              strengths: Array.isArray(parsed.strengths) ? parsed.strengths : [],
+              weaknesses: Array.isArray(parsed.weaknesses) ? parsed.weaknesses : [],
+              improvement_suggestions: Array.isArray(parsed.improvement_suggestions) ? parsed.improvement_suggestions : [],
+              summary: parsed.summary || "Resume analysis completed.",
+              skill_diversity_score: Math.min(100, Math.max(0, parsed.skill_diversity_score || 0)),
+              experience_depth_score: Math.min(100, Math.max(0, parsed.experience_depth_score || 0)),
+            };
+          }
+        }
+      } catch (err) {
+        // Fall through to default analysis
+      }
+    }
+    
+    // Fallback if AI analysis fails
+    if (!analysis) {
+      const skills = fallbackParseSkills(resumeText);
+      const skillCount = skills.length;
+      const overallScore = Math.min(100, Math.max(0, Math.round((skillCount / 20) * 100)));
+      
+      analysis = {
+        overall_score: overallScore,
+        ats_score: 70,
+        strengths: skillCount > 0 ? [`${skillCount} technical skills identified`] : ["Resume structure present"],
+        weaknesses: skillCount < 5 ? ["Limited technical skills listed"] : ["Consider adding more quantifiable achievements"],
+        improvement_suggestions: [
+          "Add more specific technical skills",
+          "Include quantifiable achievements",
+          "Ensure ATS-friendly formatting",
+          "Highlight relevant experience",
+          "Add industry keywords"
+        ],
+        summary: "Basic resume analysis completed. Consider using AI analysis for more detailed insights.",
+        skill_diversity_score: Math.min(100, skillCount * 10),
+        experience_depth_score: 60,
+      };
+    }
+    
+    return analysis;
+  } catch (err) {
+    console.error("Error in resume strength analysis:", err);
+    throw err;
+  }
+}
+
+/**
+ * Generate a personalized cover letter based on resume and job description
+ */
+export async function generateCoverLetter(
+  resumeText: string,
+  jobDescription: string,
+  companyName?: string
+): Promise<string> {
+  try {
+    const zypherContext = await createZypherContext(Deno.cwd());
+    const provider = getProviderFromEnv();
+    if (!provider) {
+      throw new Error("Failed to create model provider");
+    }
+    
+    const agent = new ZypherAgent(zypherContext, provider);
+    
+    const companyContext = companyName ? `Company: ${companyName}\n\n` : "";
+    const prompt = `Generate a professional, personalized cover letter.
+
+${companyContext}Job Description:
+${jobDescription}
+
+Resume:
+${resumeText}
+
+Requirements:
+- 3-4 paragraphs (approximately 250-350 words)
+- Professional and enthusiastic tone
+- First paragraph: Express interest and mention the specific role
+- Second paragraph: Highlight 2-3 most relevant experiences/skills from resume that match the job
+- Third paragraph: Show understanding of the company/role and what you can contribute
+- Fourth paragraph (optional): Closing statement with call to action
+- Use "I" and "my" (first person)
+- Be specific and avoid generic phrases
+- Match the tone of the job description
+- Do NOT include placeholder text like [Your Name] or [Date]
+- Start directly with the greeting (e.g., "Dear Hiring Manager,")
+
+Output the cover letter text only, no JSON, no markdown formatting, just the letter text.`;
+
+    let resultText = "";
+    type ContentBlock = { type?: string; text?: string };
+    type MessageLike = { content?: ContentBlock[] };
+    type TaskEventLike = { type: string; content?: string; message?: MessageLike };
+    
+    const groqKey = Deno.env.get("GROQ_API_KEY");
+    const modelName = groqKey 
+      ? (Deno.env.get("GROQ_MODEL") || "llama-3.1-8b-instant")
+      : (Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini");
+    
+    const taskEvents = agent.runTask(prompt, modelName, undefined, { maxIterations: 3 });
+    for await (const ev of eachValueFrom(taskEvents)) {
+      const e = ev as TaskEventLike;
+      if (e.type === "text") {
+        resultText += e.content || "";
+      } else if (e.type === "message") {
+        const msg = e.message as MessageLike;
+        const blocks = msg?.content || [] as ContentBlock[];
+        for (const b of blocks) {
+          if (b?.type === "text" && typeof b.text === "string") {
+            resultText += b.text;
+          }
+        }
+      } else if (e.type === "error") {
+        console.error("Task event error:", e);
+        throw new Error(`Agent task error: ${JSON.stringify(e)}`);
+      }
+    }
+    
+    // Clean up the response - remove any JSON formatting or markdown
+    let coverLetter = resultText.trim();
+    
+    // Remove markdown code blocks if present
+    coverLetter = coverLetter.replace(/```[\s\S]*?```/g, '');
+    coverLetter = coverLetter.replace(/^```\w*\n?/gm, '');
+    coverLetter = coverLetter.replace(/\n?```$/gm, '');
+    
+    // Remove JSON structure if present
+    if (coverLetter.includes('"cover_letter"') || coverLetter.includes('"text"')) {
+      try {
+        const parsed = JSON.parse(coverLetter);
+        coverLetter = parsed.cover_letter || parsed.text || coverLetter;
+      } catch {
+        // If JSON parse fails, continue with original text
+      }
+    }
+    
+    // Fallback if empty
+    if (!coverLetter || coverLetter.length < 100) {
+      coverLetter = `Dear Hiring Manager,
+
+I am writing to express my strong interest in the position. Based on the job description, I believe my background and skills align well with your requirements.
+
+My experience includes relevant technical skills and professional achievements that would make me a valuable addition to your team. I am excited about the opportunity to contribute to your organization.
+
+Thank you for considering my application. I look forward to discussing how my qualifications can benefit your team.
+
+Sincerely,
+[Your Name]`;
+    }
+    
+    return coverLetter.trim();
+  } catch (err) {
+    console.error("Error generating cover letter:", err);
+    throw err;
   }
 }

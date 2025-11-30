@@ -14,6 +14,8 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 - **Fit Score Calculation** - Quantified match score (0-100) based on technical skill alignment
 - **Smart Job Discovery** - Web search powered by Tavily API to find relevant opportunities
 - **Intelligent Filtering** - Automatically excludes job boards, surfaces direct company postings only
+- **Resume Strength Analysis** - Comprehensive resume quality assessment with ATS compatibility scoring
+- **AI Cover Letter Generator** - Personalized cover letters tailored to specific job descriptions
 
 ### User Experience
 
@@ -21,7 +23,9 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 - **Animated Visual Effects** - Dynamic gradient animations, shimmer effects, glowing borders, and scanline overlays for a cutting-edge look
 - **Glassmorphism & Depth** - Multi-layer shadows, backdrop blur effects, and gradient borders create a sophisticated 3D appearance
 - **Fully Responsive** - Optimized for desktop, tablet, and mobile devices with touch-friendly controls
-- **Unified Web Interface** - Single-page application with seamless analysis-to-search workflow
+- **Card-Based Feature Layout** - Organized feature cards with clear requirements and descriptions for intuitive navigation
+- **Unified Web Interface** - Single-page application with seamless workflow between all features
+- **Shared Input System** - Resume and Job Description inputs shared across all features for consistency
 - **PDF Resume Upload** - Upload your resume as a PDF file for automatic text extraction
 - **Dual Result Display** - View analysis results and job search results simultaneously
 - **Smart Validation** - Visual feedback and clear error messages for better UX
@@ -87,21 +91,40 @@ Open <http://localhost:8000> in your browser.
 
 ### Usage Flow
 
-1. **Add your resume** (required) - You can either:
+1. **Add your resume** (required for all features) - You can either:
    - **Paste your resume text** directly into the textarea, or
    - **Upload a PDF file** using the "📄 Upload PDF" button (text will be automatically extracted)
-2. **Option A - Analysis Mode:** Paste a job description and click "Analyze Match" to get:
-   - Fit score with matched/missing skills breakdown
-   - Personalized improvement suggestions
-   - Results displayed in "📊 Analysis Results" section
-   - Job search section appears automatically after analysis
-3. **Option B - Search Mode:** Leave JD empty and click "🔍 Search Jobs" to:
-   - Enter role, location, and keywords (all optional)
-   - Get top 3 matching jobs ranked by fit score
-   - View detailed match analysis for each position
-   - Results displayed in "🔍 Job Search Results" section
 
-**Note:** Both analysis and job search results can be displayed simultaneously, allowing you to compare and reference both sets of results at the same time.
+2. **Add job description** (optional, required for some features):
+   - Paste a job description in the textarea below the resume
+   - Required for "Analyze Match" and "Cover Letter Generator"
+   - Optional for "Web Job Search"
+
+3. **Choose a feature:**
+
+   **📊 Analyze Match** (Core Feature)
+   - Requires: Resume + Job Description
+   - Get fit score, matched/missing skills, and personalized improvement suggestions
+   - Results displayed within the feature card
+
+   **🔍 Web Job Search** (Core Feature)
+   - Requires: Resume (Job Description optional)
+   - Enter role, location, and keywords (all optional)
+   - Get top 3 matching jobs ranked by fit score with detailed match analysis
+   - Results displayed within the feature card
+
+   **📊 Resume Strength Analysis** (AI-Powered Tool)
+   - Requires: Resume only
+   - Get comprehensive resume quality assessment, ATS compatibility score, strengths, weaknesses, and improvement suggestions
+   - Results displayed within the feature card
+
+   **✍️ AI Cover Letter Generator** (AI-Powered Tool)
+   - Requires: Resume + Job Description
+   - Generate a personalized cover letter tailored to the specific job description
+   - Company name automatically extracted from job description
+   - Results displayed within the feature card
+
+**Note:** All features can run independently and simultaneously. Results are displayed within their respective feature cards, allowing you to use multiple features at once.
 
 ## 🏗️ Architecture
 
@@ -110,7 +133,7 @@ Open <http://localhost:8000> in your browser.
 ```text
 jobmatch-ai/
 ├── src/
-│   ├── agent.ts              # Core Zypher agent logic
+│   ├── agent.ts              # Core Zypher agent logic (analysis, job search, resume strength, cover letter)
 │   ├── server.ts             # HTTP server & routing
 │   └── tools/
 │       ├── job_search.ts     # Tavily integration
@@ -167,7 +190,19 @@ jobmatch-ai/
    - AI analysis ranks top 3 matches by resume fit
    - Returns structured results with match breakdowns
 
-5. **Resilience**
+5. **Resume Strength Analysis**
+   - Comprehensive resume quality assessment
+   - ATS compatibility scoring
+   - Identifies strengths, weaknesses, and improvement areas
+   - Provides actionable suggestions for enhancement
+
+6. **Cover Letter Generation**
+   - AI-generated personalized cover letters
+   - Automatically extracts company name from job description
+   - Tailored to match resume and job requirements
+   - Professional formatting and structure
+
+7. **Resilience**
    - Automatic fallback to local keyword-based parser on API failures
    - Graceful degradation maintains core functionality
 

@@ -44,7 +44,7 @@
           padding: 10px;
         }
         
-        .container {
+      .container {
           padding: 20px;
           border-radius: 16px;
         }
@@ -106,7 +106,7 @@
         
         .container {
           padding: 16px;
-          border-radius: 12px;
+        border-radius: 12px;
         }
         
         h1 {
@@ -216,12 +216,6 @@
         margin-bottom: 15px;
       }
       
-      .job-search-section {
-        display: none;
-        margin-top: 30px;
-        padding-top: 30px;
-        border-top: 2px solid rgba(99, 102, 241, 0.3);
-      }
       
       .section-description {
         color: #94a3b8;
@@ -253,10 +247,6 @@
       @media (max-width: 768px) {
         
         /* Adjust job search section spacing */
-        #jobSearchSection {
-          padding-top: 20px !important;
-          margin-top: 20px !important;
-        }
       }
       
       body::before {
@@ -999,8 +989,8 @@
       </div>
       <p class="subtitle">Powered by CoreSpeed's Zypher AI Agent Framework</p>
       
-      <!-- Unified Input Form -->
-      <div>
+      <!-- Shared Resume Input -->
+      <div style="margin-bottom: 30px;">
         <div class="resume-header">
           <label for="resume">Resume <span class="required-marker">*</span></label>
           <div class="upload-controls">
@@ -1011,53 +1001,117 @@
             <span id="pdfFileName" class="pdf-file-name hidden"></span>
           </div>
         </div>
-        <textarea id="resume" placeholder="Paste your resume text here or upload a PDF file... (Required)" required></textarea>
+        <textarea id="resume" placeholder="Paste your resume text here or upload a PDF file... (Required for all features)" required></textarea>
         <p class="tip-text">
-          💡 <strong>Tip:</strong> You can either paste your resume text or upload a PDF file.
+          💡 <strong>Tip:</strong> You can either paste your resume text or upload a PDF file. This resume will be used for all features below.
         </p>
 
-        <label for="jd">Job Description (Optional)</label>
-        <textarea id="jd" placeholder="Paste the full job description here... (Leave empty to search for matching jobs instead)"></textarea>
+        <div class="resume-header">
+          <label for="jd">Job Description <span class="required-marker" id="jdRequiredMarker" style="display: none;">*</span></label>
+        </div>
+        <textarea id="jd" placeholder="Paste the full job description here... (Required for Analyze Match and Cover Letter Generator, optional for Job Search)"></textarea>
         <p class="tip-text">
-          💡 <strong>Tip:</strong> If you leave this empty, we'll search the web for jobs that match your resume.
+          💡 <strong>Tip:</strong> 
+          <span id="jdTipText">Paste a job description to analyze match or generate a cover letter. Leave empty to search for jobs instead.</span>
         </p>
-
-        <button id="analyzeBtn" onclick="handleSubmit()">Analyze Match</button>
       </div>
 
-      <!-- Analysis Results Section -->
-      <div class="results hidden" id="analysisResults">
-        <h2>📊 Analysis Results</h2>
-        <div id="analysisOut"></div>
-      </div>
-      
-      <!-- Job Search Results Section -->
-      <div class="results hidden" id="jobSearchResults">
-        <h2>🔍 Job Search Results</h2>
-        <div id="jobSearchOut"></div>
-      </div>
-      
-      <!-- Job Search Options (shown after analysis or when JD is empty) -->
-      <div id="jobSearchSection" class="job-search-section">
-        <h3>🔍 Search for Matching Jobs</h3>
-        <p class="section-description">Search the web for jobs that match your resume:</p>
+      <!-- Core Features Section -->
+      <div style="margin-bottom: 40px;">
+        <h2 style="margin-bottom: 20px;">🎯 Core Features</h2>
         
-        <div class="search-grid">
+        <!-- Analyze Match Feature -->
+        <div class="result-card" style="margin-bottom: 20px;">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">📊 Analyze Match</h3>
+          <p class="section-description" style="margin-bottom: 15px;">
+            Compare your resume against a job description to get a fit score, matched skills, and personalized improvement suggestions.
+          </p>
+          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
+            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
+              <strong>Required:</strong> Resume (above) and Job Description (above)
+            </p>
+          </div>
+          <button id="analyzeBtn" onclick="handleSubmit()" style="width: 100%; margin-bottom: 0;">
+            🔍 Analyze Match
+          </button>
+          <div id="analysisResults" class="results hidden" style="margin-top: 20px;">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">📊 Analysis Results</h3>
+            <div id="analysisOut"></div>
+          </div>
+        </div>
+      
+        <!-- Job Search Feature -->
+        <div class="result-card">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">🔍 Web Job Search</h3>
+          <p class="section-description" style="margin-bottom: 15px;">
+            Search the web for jobs that match your resume. Get AI-ranked results with detailed match analysis.
+          </p>
+          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
+            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
+              <strong>Required:</strong> Resume (above). All search fields are optional.
+            </p>
+          </div>
+          <div class="search-grid">
           <div>
             <label for="role">Role/Title</label>
-            <input type="text" id="role" placeholder="e.g., Software Engineer">
+              <input type="text" id="role" placeholder="e.g., Software Engineer">
           </div>
           <div>
-            <label for="location">Location (Optional)</label>
-            <input type="text" id="location" placeholder="e.g., San Francisco, CA">
+              <label for="location">Location</label>
+              <input type="text" id="location" placeholder="e.g., San Francisco, CA">
+            </div>
+          </div>
+          <label for="keywords" style="margin-top: 15px; display: block;">Additional Keywords</label>
+          <input type="text" id="keywords" placeholder="e.g., remote, python, kubernetes" style="margin-bottom: 15px;">
+          <button id="searchBtn" onclick="searchJobs()" style="width: 100%; margin-bottom: 0;">
+            🔍 Search & Rank Jobs
+          </button>
+          <div id="jobSearchResults" class="results hidden" style="margin-top: 20px;">
+            <h3 style="margin-top: 0; margin-bottom: 15px;">🔍 Job Search Results</h3>
+            <div id="jobSearchOut"></div>
+          </div>
           </div>
         </div>
         
-        <label for="keywords">Additional Keywords (Optional)</label>
-        <input type="text" id="keywords" placeholder="e.g., remote, python, kubernetes" style="margin-bottom: 20px;">
+      <!-- AI-Powered Tools Section -->
+      <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid rgba(99, 102, 241, 0.3);">
+        <h2 style="margin-bottom: 20px;">🤖 AI-Powered Tools</h2>
         
-        <button id="searchBtn" onclick="searchJobs()">🔍 Search & Rank Jobs</button>
+        <!-- Resume Strength Analysis -->
+        <div class="result-card" style="margin-bottom: 20px;">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">📊 Resume Strength Analysis</h3>
+          <p class="section-description" style="margin-bottom: 15px;">
+            Get a comprehensive analysis of your resume quality, ATS compatibility, and improvement suggestions - no job description needed.
+          </p>
+          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
+            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
+              <strong>Required:</strong> Resume (above)
+            </p>
+          </div>
+          <button onclick="analyzeResumeStrength()" style="width: 100%; margin-bottom: 0;">
+            🔍 Analyze Resume Strength
+          </button>
+          <div id="resumeStrengthResults" class="hidden" style="margin-top: 20px;"></div>
+        </div>
+        
+        <!-- Cover Letter Generator -->
+        <div class="result-card">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">✍️ AI Cover Letter Generator</h3>
+          <p class="section-description" style="margin-bottom: 15px;">
+            Generate a personalized cover letter tailored to a specific job description.
+          </p>
+          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
+            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
+              <strong>Required:</strong> Resume (above) and Job Description (above)
+            </p>
+          </div>
+          <button onclick="generateCoverLetter()" style="width: 100%; margin-bottom: 0;">
+            ✨ Generate Cover Letter
+          </button>
+          <div id="coverLetterResults" class="hidden" style="margin-top: 20px;"></div>
+        </div>
       </div>
+
     </div>
 
     <script>
@@ -1134,14 +1188,14 @@
         }
       }
       
-      // Update button text based on JD input
+      // Update tip text based on JD input to guide users
       document.getElementById("jd").addEventListener("input", function() {
         const jd = this.value.trim();
-        const btn = document.getElementById("analyzeBtn");
+        const tipText = document.getElementById("jdTipText");
         if (!jd) {
-          btn.textContent = "🔍 Search Jobs";
+          tipText.textContent = "Leave empty to use the Web Job Search feature below instead.";
         } else {
-          btn.textContent = "Analyze Match";
+          tipText.textContent = "Paste a job description to analyze match or generate a cover letter.";
         }
       });
       
@@ -1151,7 +1205,6 @@
         const btn = document.getElementById("analyzeBtn");
         const analysisOut = document.getElementById("analysisOut");
         const analysisResults = document.getElementById("analysisResults");
-        const jobSearchSection = document.getElementById("jobSearchSection");
         const resumeTextarea = document.getElementById("resume");
         
         // Warn user of empty resume input with better UX
@@ -1167,12 +1220,18 @@
           return;
         }
         
-        // Scenario 1: Empty JD, resume input -> job search
+        // Scenario 1: Empty JD, resume input -> require JD for analysis
         if (!jd) {
-          jobSearchSection.classList.remove("hidden");
           analysisResults.classList.add("hidden");
-          // Scroll to job search section
-          jobSearchSection.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          const jdTextarea = document.getElementById("jd");
+          // Highlight the JD textarea
+          jdTextarea.style.borderColor = "#f87171";
+          jdTextarea.focus();
+          alert("⚠️ Please enter a job description to analyze match (required).");
+          // Reset border color after a delay
+          setTimeout(() => {
+            jdTextarea.style.borderColor = "rgba(99, 102, 241, 0.3)";
+          }, 3000);
           return;
         }
         
@@ -1181,10 +1240,11 @@
         btn.disabled = true;
         btn.textContent = "Analyzing Match...";
         analysisResults.classList.remove("hidden");
-        // Keep job search section visible if it was already shown
-        jobSearchSection.classList.remove("hidden");
         // Clear previous analysis results and show loading
         analysisOut.innerHTML = '<div class="loading"><div class="spinner"></div><span>🤖 AI agent is analyzing your resume match...</span></div>';
+        
+        // Scroll to show loading indicator
+        analysisResults.scrollIntoView({ behavior: "smooth", block: "start" });
         
         try {
           const res = await fetch("/analyze", {
@@ -1203,12 +1263,6 @@
             analysisOut.innerHTML = `<div class="error">Error: ${data.error}</div>`;
           } else if (data.analysis) {
             displayResults(data.analysis);
-            // Show job search section after analysis (both results can be visible)
-            jobSearchSection.classList.remove("hidden");
-            // Scroll to top of Analysis Results section
-            setTimeout(() => {
-              analysisResults.scrollIntoView({ behavior: "smooth", block: "start" });
-            }, 100);
           } else {
             analysisOut.innerHTML = `<div class="error">Unexpected response format</div>`;
           }
@@ -1216,8 +1270,7 @@
           analysisOut.innerHTML = `<div class="error">Error: ${err.message}</div>`;
         } finally {
           btn.disabled = false;
-          const jd = document.getElementById("jd").value.trim();
-          btn.textContent = jd ? "Analyze Match" : "🔍 Search Jobs";
+          btn.textContent = "🔍 Analyze Match";
         }
       }
       
@@ -1332,8 +1385,10 @@
         // Clear previous job search results and show loading
         jobSearchOut.innerHTML = '<div class="loading"><div class="spinner"></div><span>🔍 Searching for jobs and analyzing matches... This may take a minute.</span></div>';
         
-        // Scroll to show loading indicator
-        jobSearchResults.scrollIntoView({ behavior: "smooth", block: "start" });
+        // Scroll to show loading indicator within the card
+        setTimeout(() => {
+          jobSearchResults.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 100);
         
         try {
           const res = await fetch("/search-jobs", {
@@ -1460,6 +1515,196 @@
         `;
         
         out.innerHTML = html;
+      }
+      
+      // Resume Strength Analysis
+      async function analyzeResumeStrength() {
+        const resume = document.getElementById("resume").value.trim();
+        const resultsDiv = document.getElementById("resumeStrengthResults");
+        
+        if (!resume) {
+          alert("⚠️ Please paste your resume or upload a PDF file first.");
+          document.getElementById("resume").focus();
+          return;
+        }
+        
+        resultsDiv.classList.remove("hidden");
+        resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><span>🤖 AI is analyzing your resume strength...</span></div>';
+        
+        try {
+          const res = await fetch("/analyze-resume", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ resume })
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+          }
+          
+          const data = await res.json();
+          
+          if (data.error) {
+            resultsDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+          } else if (data.analysis) {
+            displayResumeStrength(data.analysis);
+          } else {
+            resultsDiv.innerHTML = `<div class="error">Unexpected response format</div>`;
+          }
+        } catch (err) {
+          resultsDiv.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+        }
+      }
+      
+      function displayResumeStrength(analysis) {
+        const resultsDiv = document.getElementById("resumeStrengthResults");
+        
+        const overallColor = analysis.overall_score >= 70 ? "#34d399" : analysis.overall_score >= 50 ? "#fbbf24" : "#f87171";
+        const atsColor = analysis.ats_score >= 70 ? "#34d399" : analysis.ats_score >= 50 ? "#fbbf24" : "#f87171";
+        
+        let html = `
+          <div class="result-card">
+            <div style="text-align: center; margin-bottom: 20px;">
+              <div class="score" style="color: ${overallColor}; font-size: 2.5em;">${analysis.overall_score}/100</div>
+              <div class="score-label">Overall Resume Strength</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+              <div style="text-align: center; padding: 15px; background: rgba(30, 41, 59, 0.5); border-radius: 12px;">
+                <div style="font-size: 1.8em; font-weight: 700; color: ${atsColor}; margin-bottom: 5px;">${analysis.ats_score}</div>
+                <div style="font-size: 0.9em; color: #94a3b8;">ATS Score</div>
+              </div>
+              <div style="text-align: center; padding: 15px; background: rgba(30, 41, 59, 0.5); border-radius: 12px;">
+                <div style="font-size: 1.8em; font-weight: 700; color: #818cf8; margin-bottom: 5px;">${analysis.skill_diversity_score}</div>
+                <div style="font-size: 0.9em; color: #94a3b8;">Skill Diversity</div>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">✅ Strengths</div>
+              <ul style="margin: 8px 0; padding-left: 20px; color: #e2e8f0;">
+                ${analysis.strengths.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+              </ul>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">⚠️ Areas for Improvement</div>
+              <ul style="margin: 8px 0; padding-left: 20px; color: #e2e8f0;">
+                ${analysis.weaknesses.map(w => `<li>${escapeHtml(w)}</li>`).join('')}
+              </ul>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">💡 Improvement Suggestions</div>
+              <ul class="suggestions">
+                ${analysis.improvement_suggestions.map(s => `<li>${escapeHtml(s)}</li>`).join('')}
+              </ul>
+            </div>
+            
+            <div class="summary">
+              ${escapeHtml(analysis.summary)}
+            </div>
+          </div>
+        `;
+        
+        resultsDiv.innerHTML = html;
+        resultsDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      
+      // Cover Letter Generator
+      async function generateCoverLetter() {
+        const resume = document.getElementById("resume").value.trim();
+        const jd = document.getElementById("jd").value.trim();
+        const resultsDiv = document.getElementById("coverLetterResults");
+        const resumeTextarea = document.getElementById("resume");
+        const jdTextarea = document.getElementById("jd");
+        
+        // Validate resume input
+        if (!resume) {
+          alert("⚠️ Please paste your resume or upload a PDF file first (required for cover letter generation).");
+          resumeTextarea.style.borderColor = "#f87171";
+          resumeTextarea.focus();
+          setTimeout(() => {
+            resumeTextarea.style.borderColor = "rgba(99, 102, 241, 0.3)";
+          }, 3000);
+          return;
+        }
+        
+        // Validate job description input
+        if (!jd) {
+          alert("⚠️ Please paste a job description to generate a cover letter (required).");
+          jdTextarea.style.borderColor = "#f87171";
+          jdTextarea.focus();
+          setTimeout(() => {
+            jdTextarea.style.borderColor = "rgba(99, 102, 241, 0.3)";
+          }, 3000);
+          return;
+        }
+        
+        resultsDiv.classList.remove("hidden");
+        resultsDiv.innerHTML = '<div class="loading"><div class="spinner"></div><span>✍️ AI is generating your personalized cover letter...</span></div>';
+        
+        try {
+          const res = await fetch("/generate-cover-letter", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ resume, jd })
+          });
+          
+          if (!res.ok) {
+            throw new Error(`Server error: ${res.status}`);
+          }
+          
+          const data = await res.json();
+          
+          if (data.error) {
+            resultsDiv.innerHTML = `<div class="error">Error: ${data.error}</div>`;
+          } else if (data.coverLetter) {
+            displayCoverLetter(data.coverLetter);
+          } else {
+            resultsDiv.innerHTML = `<div class="error">Unexpected response format</div>`;
+          }
+        } catch (err) {
+          resultsDiv.innerHTML = `<div class="error">Error: ${err.message}</div>`;
+        }
+      }
+      
+      function displayCoverLetter(coverLetter) {
+        const resultsDiv = document.getElementById("coverLetterResults");
+        
+        let html = `
+          <div class="result-card">
+            <div class="section-title">📝 Generated Cover Letter</div>
+            <div style="background: rgba(30, 41, 59, 0.6); padding: 20px; border-radius: 12px; white-space: pre-wrap; line-height: 1.8; color: #e2e8f0; font-family: 'Georgia', serif; margin-bottom: 15px;">
+${escapeHtml(coverLetter)}
+            </div>
+            <button onclick="copyCoverLetter()" style="width: 100%; margin-top: 10px;">
+              📋 Copy to Clipboard
+            </button>
+          </div>
+        `;
+        
+        resultsDiv.innerHTML = html;
+        resultsDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      
+      function copyCoverLetter() {
+        const coverLetterDiv = document.getElementById("coverLetterResults").querySelector("div[style*='white-space']");
+        if (!coverLetterDiv) return;
+        
+        const coverLetterText = coverLetterDiv.textContent;
+        navigator.clipboard.writeText(coverLetterText).then(() => {
+          const btn = event.target;
+          const originalText = btn.textContent;
+          btn.textContent = "✅ Copied!";
+          btn.style.background = "linear-gradient(135deg, #34d399 0%, #10b981 100%)";
+          setTimeout(() => {
+            btn.textContent = originalText;
+            btn.style.background = "";
+          }, 2000);
+        }).catch(err => {
+          alert("Failed to copy: " + err.message);
+        });
       }
     </script>
   </body>
