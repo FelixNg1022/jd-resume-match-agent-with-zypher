@@ -16,7 +16,7 @@
       
       @keyframes float {
         0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
+        50% { transform: translateY(-4px); }
       }
       
       @keyframes pulse {
@@ -54,7 +54,14 @@
         }
         
         h2 {
-          font-size: 1.4em;
+          font-size: 1.8em;
+          margin-bottom: 20px;
+          padding: 12px 0;
+        }
+        
+        h2::before,
+        h2::after {
+          width: 60px;
         }
         
         h3 {
@@ -230,6 +237,149 @@
         display: none;
       }
       
+      /* Feature card styles */
+      .feature-section {
+        margin-bottom: 40px;
+      }
+      
+      .feature-card {
+        margin-bottom: 20px;
+      }
+      
+      .feature-card:last-child {
+        margin-bottom: 0;
+      }
+      
+      .feature-title {
+        margin-top: 0;
+        margin-bottom: 12px;
+      }
+      
+      .requirements-box {
+        background: rgba(99, 102, 241, 0.1);
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        border-left: 3px solid #818cf8;
+      }
+      
+      .requirements-box p {
+        margin: 0;
+        font-size: 0.9em;
+        color: #cbd5e1;
+      }
+      
+      .feature-button {
+        width: 100%;
+        margin-bottom: 0;
+      }
+      
+      .results-container {
+        margin-top: 20px;
+      }
+      
+      .results-title {
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+      
+      .section-divider {
+        margin-top: 40px;
+        padding-top: 30px;
+        border-top: 2px solid rgba(99, 102, 241, 0.3);
+      }
+      
+      .input-section {
+        margin-bottom: 30px;
+      }
+      
+      .keywords-label {
+        margin-top: 15px;
+        display: block;
+      }
+      
+      .keywords-input {
+        margin-bottom: 15px;
+      }
+      
+      /* JSON view styles */
+      details {
+        margin-top: 20px;
+      }
+      
+      summary {
+        cursor: pointer;
+        color: #64748b;
+        font-size: 0.9em;
+      }
+      
+      /* Mock data warning */
+      .mock-warning {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        margin-bottom: 15px;
+      }
+      
+      .mock-warning p {
+        margin: 8px 0;
+        color: #92400e;
+      }
+      
+      /* Job card styles */
+      .job-content {
+        flex: 1;
+      }
+      
+      .job-details-section {
+        margin: 12px 0;
+      }
+      
+      .job-details-item {
+        margin-bottom: 8px;
+      }
+      
+      .skills-list-spacing {
+        margin-top: 4px;
+      }
+      
+      .job-url-disabled {
+        color: #94a3b8;
+        cursor: not-allowed;
+      }
+      
+      .more-skills-count {
+        color: #64748b;
+      }
+      
+      /* Expandable JD input styles */
+      .jd-input-container {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s ease-out, margin 0.4s ease-out, opacity 0.4s ease-out, padding 0.4s ease-out;
+        opacity: 0;
+        margin-bottom: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      
+      .jd-input-container.expanded {
+        max-height: 1000px;
+        opacity: 1;
+        margin-bottom: 15px;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+      
+      .jd-input-container label {
+        display: block;
+        margin-bottom: 8px;
+        opacity: 1;
+      }
+      
+      .jd-input-container textarea {
+        margin-bottom: 0;
+      }
+      
       .pdf-file-name.success {
         color: #34d399;
       }
@@ -244,10 +394,6 @@
         cursor: pointer;
       }
       
-      @media (max-width: 768px) {
-        
-        /* Adjust job search section spacing */
-      }
       
       body::before {
         content: '';
@@ -336,35 +482,67 @@
       .logo-header {
         display: flex;
         align-items: center;
-        gap: 16px;
-        margin-bottom: 8px;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 15px;
+        padding: 20px 0;
+        position: relative;
         animation: fadeIn 0.8s ease-out;
       }
       
+      .logo-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #a5b4fc, #c4b5fd, #ddd6fe, #e9d5ff, #f0abfc, #a5b4fc, transparent);
+        border-radius: 2px;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(165, 180, 252, 0.6);
+      }
+      
+      .logo-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #a5b4fc, #c4b5fd, #ddd6fe, #e9d5ff, #f0abfc, #a5b4fc, transparent);
+        border-radius: 2px;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(165, 180, 252, 0.6);
+      }
+      
       .logo-header svg {
-        filter: drop-shadow(0 0 15px rgba(129, 140, 248, 0.5));
+        filter: drop-shadow(0 0 20px rgba(165, 180, 252, 0.8)) drop-shadow(0 0 40px rgba(196, 181, 253, 0.6));
+        animation: float 3s ease-in-out infinite;
       }
       
       h1 { 
         margin-top: 0;
         margin-bottom: 0;
-        background: linear-gradient(135deg, #818cf8 0%, #a78bfa 30%, #60a5fa 60%, #818cf8 100%);
-        background-size: 200% 200%;
+        background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 20%, #ddd6fe 40%, #e9d5ff 50%, #f0abfc 60%, #f5d0fe 70%, #a5b4fc 100%);
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        font-size: 2.5em;
-        font-weight: 800;
-        letter-spacing: -0.02em;
+        font-size: 3em;
+        font-weight: 900;
+        letter-spacing: -0.03em;
         animation: fadeIn 0.8s ease-out, textShimmer 3s ease-in-out infinite;
-        filter: drop-shadow(0 0 20px rgba(129, 140, 248, 0.5));
+        filter: drop-shadow(0 0 25px rgba(165, 180, 252, 0.8)) drop-shadow(0 0 50px rgba(196, 181, 253, 0.6)) drop-shadow(0 0 75px rgba(240, 171, 252, 0.4));
+        position: relative;
       }
       
       @media (max-width: 768px) {
         .logo-header {
           flex-direction: column;
-          align-items: flex-start;
+          align-items: center;
           gap: 12px;
+          padding: 15px 0;
         }
         
         .logo-header svg {
@@ -372,8 +550,14 @@
           width: 48px;
         }
         
+      .logo-icon {
+        height: 60px;
+        width: 60px;
+        flex-shrink: 0;
+      }
+        
         h1 {
-          font-size: 1.8em;
+          font-size: 2.2em;
         }
       }
       
@@ -576,15 +760,46 @@
       
       h2 {
         margin-top: 0;
-        background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #60a5fa 100%);
-        background-size: 200% 200%;
+        margin-bottom: 30px;
+        background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 20%, #ddd6fe 40%, #e9d5ff 50%, #f0abfc 60%, #f5d0fe 70%, #a5b4fc 100%);
+        background-size: 300% 300%;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        font-weight: 700;
-        font-size: 1.8em;
-        animation: textShimmer 4s ease-in-out infinite;
-        filter: drop-shadow(0 0 10px rgba(129, 140, 248, 0.4));
+        font-weight: 800;
+        font-size: 2.2em;
+        letter-spacing: -0.02em;
+        animation: textShimmer 3s ease-in-out infinite;
+        filter: drop-shadow(0 0 20px rgba(165, 180, 252, 0.7)) drop-shadow(0 0 40px rgba(196, 181, 253, 0.5)) drop-shadow(0 0 60px rgba(240, 171, 252, 0.3));
+        position: relative;
+        padding: 15px 0;
+        text-align: center;
+      }
+      
+      h2::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #a5b4fc, #c4b5fd, #ddd6fe, #e9d5ff, #f0abfc, #f5d0fe, #a5b4fc, transparent);
+        border-radius: 2px;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(165, 180, 252, 0.6), 0 0 16px rgba(196, 181, 253, 0.4);
+      }
+      
+      h2::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(90deg, transparent, #a5b4fc, #c4b5fd, #ddd6fe, #e9d5ff, #f0abfc, #f5d0fe, #a5b4fc, transparent);
+        border-radius: 2px;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(165, 180, 252, 0.6), 0 0 16px rgba(196, 181, 253, 0.4);
       }
       
       h3 {
@@ -695,42 +910,35 @@
         margin-top: 8px;
       }
       .skill-tag {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.3) 0%, rgba(139, 92, 246, 0.3) 50%, rgba(96, 165, 250, 0.3) 100%);
-        background-size: 200% 200%;
-        color: #c7d2fe;
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+        color: #059669;
         padding: 6px 14px;
         border-radius: 20px;
         font-size: 0.85em;
         font-weight: 600;
-        border: 1px solid rgba(129, 140, 248, 0.4);
+        border: 1px solid rgba(5, 150, 105, 0.4);
         transition: all 0.2s ease;
         display: inline-block;
-        box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
-        animation: tagGradient 4s ease infinite;
-      }
-      
-      @keyframes tagGradient {
-        0%, 100% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
+        box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3);
       }
       
       .skill-tag:hover {
         transform: scale(1.05);
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.5) 0%, rgba(139, 92, 246, 0.5) 50%, rgba(96, 165, 250, 0.5) 100%);
-        background-size: 200% 200%;
-        border-color: rgba(129, 140, 248, 0.7);
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.5);
+        background: linear-gradient(135deg, rgba(5, 150, 105, 0.3) 0%, rgba(16, 185, 129, 0.3) 100%);
+        border-color: rgba(5, 150, 105, 0.6);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5);
       }
       
       .skill-tag.missing {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.2) 0%, rgba(220, 38, 38, 0.2) 100%);
-        color: #f87171;
-        border-color: rgba(239, 68, 68, 0.3);
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.2) 0%, rgba(239, 68, 68, 0.2) 100%);
+        color: #dc2626;
+        border-color: rgba(220, 38, 38, 0.4);
       }
       
       .skill-tag.missing:hover {
-        background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.3) 100%);
-        border-color: rgba(239, 68, 68, 0.5);
+        background: linear-gradient(135deg, rgba(220, 38, 38, 0.3) 0%, rgba(239, 68, 68, 0.3) 100%);
+        border-color: rgba(220, 38, 38, 0.6);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
       }
       .suggestions {
         list-style: none;
@@ -962,15 +1170,18 @@
   <body>
     <div class="container">
       <div class="logo-header">
-        <svg width="80" height="80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" style="height: 60px; width: 60px; flex-shrink: 0;">
+        <svg width="60" height="60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" class="logo-icon">
           <defs>
-            <linearGradient id="logoIconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#818cf8;stop-opacity:1" />
-              <stop offset="30%" style="stop-color:#a78bfa;stop-opacity:1" />
-              <stop offset="60%" style="stop-color:#60a5fa;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#818cf8;stop-opacity:1" />
+            <linearGradient id="webpageLogoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#a5b4fc;stop-opacity:1" />
+              <stop offset="20%" style="stop-color:#c4b5fd;stop-opacity:1" />
+              <stop offset="40%" style="stop-color:#ddd6fe;stop-opacity:1" />
+              <stop offset="50%" style="stop-color:#e9d5ff;stop-opacity:1" />
+              <stop offset="60%" style="stop-color:#f0abfc;stop-opacity:1" />
+              <stop offset="70%" style="stop-color:#f5d0fe;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#a5b4fc;stop-opacity:1" />
             </linearGradient>
-            <filter id="logoIconGlow">
+            <filter id="webpageLogoGlow">
               <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
               <feMerge>
                 <feMergeNode in="coloredBlur"/>
@@ -979,10 +1190,10 @@
             </filter>
           </defs>
           <g transform="translate(40, 40)">
-            <circle cx="0" cy="0" r="32" fill="none" stroke="url(#logoIconGradient)" stroke-width="3" opacity="0.8" filter="url(#logoIconGlow)"/>
-            <circle cx="0" cy="0" r="22" fill="none" stroke="url(#logoIconGradient)" stroke-width="2.5" opacity="0.6"/>
-            <circle cx="0" cy="0" r="13" fill="none" stroke="url(#logoIconGradient)" stroke-width="2" opacity="0.4"/>
-            <circle cx="0" cy="0" r="5" fill="url(#logoIconGradient)" filter="url(#logoIconGlow)"/>
+            <circle cx="0" cy="0" r="32" fill="none" stroke="url(#webpageLogoGradient)" stroke-width="3" opacity="0.8" filter="url(#webpageLogoGlow)"/>
+            <circle cx="0" cy="0" r="22" fill="none" stroke="url(#webpageLogoGradient)" stroke-width="2.5" opacity="0.6"/>
+            <circle cx="0" cy="0" r="13" fill="none" stroke="url(#webpageLogoGradient)" stroke-width="2" opacity="0.4"/>
+            <circle cx="0" cy="0" r="5" fill="url(#webpageLogoGradient)" filter="url(#webpageLogoGlow)"/>
           </g>
         </svg>
         <h1>JobMatch AI</h1>
@@ -990,138 +1201,147 @@
       <p class="subtitle">Powered by CoreSpeed's Zypher AI Agent Framework</p>
       
       <!-- Shared Resume Input -->
-      <div style="margin-bottom: 30px;">
+      <div class="input-section">
         <div class="resume-header">
           <label for="resume">Resume <span class="required-marker">*</span></label>
           <div class="upload-controls">
             <label for="pdfUpload" class="pdf-upload-label default">
-              📄 Upload PDF
+              📄 Upload Resume (PDF, Word, TXT)
             </label>
-            <input type="file" id="pdfUpload" accept=".pdf" class="hidden" onchange="handlePDFUpload(event)">
+            <input type="file" id="pdfUpload" accept=".pdf,.doc,.docx,.txt" class="hidden" onchange="handlePDFUpload(event)">
             <span id="pdfFileName" class="pdf-file-name hidden"></span>
           </div>
         </div>
-        <textarea id="resume" placeholder="Paste your resume text here or upload a PDF file... (Required for all features)" required></textarea>
+        <textarea id="resume" placeholder="Paste your resume text here or upload a file (PDF, Word, or TXT)... (Required for all features)" required></textarea>
         <p class="tip-text">
-          💡 <strong>Tip:</strong> You can either paste your resume text or upload a PDF file. This resume will be used for all features below.
-        </p>
-
-        <div class="resume-header">
-          <label for="jd">Job Description <span class="required-marker" id="jdRequiredMarker" style="display: none;">*</span></label>
-        </div>
-        <textarea id="jd" placeholder="Paste the full job description here... (Required for Analyze Match and Cover Letter Generator, optional for Job Search)"></textarea>
-        <p class="tip-text">
-          💡 <strong>Tip:</strong> 
-          <span id="jdTipText">Paste a job description to analyze match or generate a cover letter. Leave empty to search for jobs instead.</span>
+          💡 <strong>Tip:</strong> You can either paste your resume text or upload a file (PDF, Word DOCX/DOC, or TXT). This resume will be used for all features below.
         </p>
       </div>
 
       <!-- Core Features Section -->
-      <div style="margin-bottom: 40px;">
-        <h2 style="margin-bottom: 20px;">🎯 Core Features</h2>
+      <div class="feature-section">
+        <h2>🎯 Core Features</h2>
         
         <!-- Analyze Match Feature -->
-        <div class="result-card" style="margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 12px;">📊 Analyze Match</h3>
-          <p class="section-description" style="margin-bottom: 15px;">
+        <div class="result-card feature-card">
+          <h3 class="feature-title">📊 Analyze Match</h3>
+          <p class="section-description">
             Compare your resume against a job description to get a fit score, matched skills, and personalized improvement suggestions.
           </p>
-          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
-            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
-              <strong>Required:</strong> Resume (above) and Job Description (above)
+          <div class="requirements-box">
+            <p>
+              <strong>Required:</strong> Resume (above) and Job Description
             </p>
           </div>
-          <button id="analyzeBtn" onclick="handleSubmit()" style="width: 100%; margin-bottom: 0;">
-            🔍 Analyze Match
+          <div id="analyzeJDContainer" class="jd-input-container">
+            <label for="analyzeJD">Job Description</label>
+            <textarea id="analyzeJD" placeholder="Paste the job description here..."></textarea>
+          </div>
+          <button id="analyzeBtn" onclick="handleSubmit()" class="feature-button">
+            📝 Fill in Job Description
           </button>
-          <div id="analysisResults" class="results hidden" style="margin-top: 20px;">
-            <h3 style="margin-top: 0; margin-bottom: 15px;">📊 Analysis Results</h3>
+          <div id="analysisResults" class="results hidden results-container">
+            <h3 class="results-title">📊 Analysis Results</h3>
             <div id="analysisOut"></div>
           </div>
         </div>
       
         <!-- Job Search Feature -->
         <div class="result-card">
-          <h3 style="margin-top: 0; margin-bottom: 12px;">🔍 Web Job Search</h3>
-          <p class="section-description" style="margin-bottom: 15px;">
+          <h3 class="feature-title">🔍 Web Job Search</h3>
+          <p class="section-description">
             Search the web for jobs that match your resume. Get AI-ranked results with detailed match analysis.
           </p>
-          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
-            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
+          <div class="requirements-box">
+            <p>
               <strong>Required:</strong> Resume (above). All search fields are optional.
             </p>
           </div>
           <div class="search-grid">
-          <div>
-            <label for="role">Role/Title</label>
+            <div>
+              <label for="role">Role/Title</label>
               <input type="text" id="role" placeholder="e.g., Software Engineer">
-          </div>
-          <div>
+            </div>
+            <div>
               <label for="location">Location</label>
               <input type="text" id="location" placeholder="e.g., San Francisco, CA">
             </div>
           </div>
-          <label for="keywords" style="margin-top: 15px; display: block;">Additional Keywords</label>
-          <input type="text" id="keywords" placeholder="e.g., remote, python, kubernetes" style="margin-bottom: 15px;">
-          <button id="searchBtn" onclick="searchJobs()" style="width: 100%; margin-bottom: 0;">
+          <label for="keywords" class="keywords-label">Additional Keywords</label>
+          <input type="text" id="keywords" placeholder="e.g., remote, python, kubernetes" class="keywords-input">
+          <button id="searchBtn" onclick="searchJobs()" class="feature-button">
             🔍 Search & Rank Jobs
           </button>
-          <div id="jobSearchResults" class="results hidden" style="margin-top: 20px;">
-            <h3 style="margin-top: 0; margin-bottom: 15px;">🔍 Job Search Results</h3>
+          <div id="jobSearchResults" class="results hidden results-container">
+            <h3 class="results-title">🔍 Job Search Results</h3>
             <div id="jobSearchOut"></div>
           </div>
-          </div>
         </div>
+      </div>
         
       <!-- AI-Powered Tools Section -->
-      <div style="margin-top: 40px; padding-top: 30px; border-top: 2px solid rgba(99, 102, 241, 0.3);">
-        <h2 style="margin-bottom: 20px;">🤖 AI-Powered Tools</h2>
+      <div class="feature-section section-divider">
+        <h2>🤖 AI-Powered Tools</h2>
         
         <!-- Resume Strength Analysis -->
-        <div class="result-card" style="margin-bottom: 20px;">
-          <h3 style="margin-top: 0; margin-bottom: 12px;">📊 Resume Strength Analysis</h3>
-          <p class="section-description" style="margin-bottom: 15px;">
+        <div class="result-card feature-card">
+          <h3 class="feature-title">📊 Resume Strength Analysis</h3>
+          <p class="section-description">
             Get a comprehensive analysis of your resume quality, ATS compatibility, and improvement suggestions - no job description needed.
           </p>
-          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
-            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
+          <div class="requirements-box">
+            <p>
               <strong>Required:</strong> Resume (above)
             </p>
           </div>
-          <button onclick="analyzeResumeStrength()" style="width: 100%; margin-bottom: 0;">
+          <button onclick="analyzeResumeStrength()" class="feature-button">
             🔍 Analyze Resume Strength
           </button>
-          <div id="resumeStrengthResults" class="hidden" style="margin-top: 20px;"></div>
+          <div id="resumeStrengthResults" class="hidden results-container"></div>
         </div>
         
         <!-- Cover Letter Generator -->
         <div class="result-card">
-          <h3 style="margin-top: 0; margin-bottom: 12px;">✍️ AI Cover Letter Generator</h3>
-          <p class="section-description" style="margin-bottom: 15px;">
+          <h3 class="feature-title">✍️ AI Cover Letter Generator</h3>
+          <p class="section-description">
             Generate a personalized cover letter tailored to a specific job description.
           </p>
-          <div style="background: rgba(99, 102, 241, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid #818cf8;">
-            <p style="margin: 0; font-size: 0.9em; color: #cbd5e1;">
-              <strong>Required:</strong> Resume (above) and Job Description (above)
+          <div class="requirements-box">
+            <p>
+              <strong>Required:</strong> Resume (above) and Job Description
             </p>
           </div>
-          <button onclick="generateCoverLetter()" style="width: 100%; margin-bottom: 0;">
-            ✨ Generate Cover Letter
+          <div id="coverLetterJDContainer" class="jd-input-container">
+            <label for="coverLetterJD">Job Description</label>
+            <textarea id="coverLetterJD" placeholder="Paste the job description here..."></textarea>
+          </div>
+          <button id="coverLetterBtn" onclick="generateCoverLetter()" class="feature-button">
+            📝 Fill in Job Description
           </button>
-          <div id="coverLetterResults" class="hidden" style="margin-top: 20px;"></div>
+          <div id="coverLetterResults" class="hidden results-container"></div>
         </div>
       </div>
 
     </div>
 
     <script>
-      // Handle PDF file upload
+      // Handle file upload (PDF, Word, TXT)
       async function handlePDFUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
         
-        if (file.type !== "application/pdf") {
-          alert("Please upload a PDF file.");
+        // Check file type
+        const allowedTypes = [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "text/plain"
+        ];
+        const allowedExtensions = [".pdf", ".doc", ".docx", ".txt"];
+        const fileExtension = "." + file.name.toLowerCase().split('.').pop();
+        
+        if (!allowedTypes.includes(file.type) && !allowedExtensions.includes(fileExtension)) {
+          alert("Please upload a PDF, Word (DOC/DOCX), or TXT file.");
           event.target.value = ""; // Clear the input
           return;
         }
@@ -1135,14 +1355,15 @@
         uploadLabel.classList.add("loading");
         uploadLabel.classList.remove("default");
         resumeTextarea.disabled = true;
-        resumeTextarea.placeholder = "Extracting text from PDF...";
+        resumeTextarea.placeholder = "Extracting text from file...";
         
         try {
           // Create FormData to send the file
           const formData = new FormData();
-          formData.append("pdf", file);
+          formData.append("pdf", file); // Keep "pdf" for backward compatibility
+          formData.append("file", file); // Also add as "file" for clarity
           
-          // Send to server for PDF parsing
+          // Send to server for file parsing
           const response = await fetch("/upload-pdf", {
             method: "POST",
             body: formData
@@ -1150,7 +1371,7 @@
           
           if (!response.ok) {
             const errorData = await response.json();
-            throw new Error(errorData.error || "Failed to parse PDF");
+            throw new Error(errorData.error || "Failed to parse file");
           }
           
           const data = await response.json();
@@ -1158,6 +1379,7 @@
           // Populate textarea with extracted text
           resumeTextarea.value = data.text;
           resumeTextarea.disabled = false;
+          resumeTextarea.placeholder = "Paste your resume text here or upload a file (PDF, Word, or TXT)... (Required)";
           
           // Show file name
           fileNameSpan.textContent = `✓ ${file.name}`;
@@ -1165,7 +1387,7 @@
           fileNameSpan.classList.add("success");
           
           // Reset upload button
-          uploadLabel.textContent = "📄 Upload PDF";
+          uploadLabel.textContent = "📄 Upload Resume (PDF, Word, TXT)";
           uploadLabel.classList.remove("loading");
           uploadLabel.classList.add("default");
           
@@ -1173,46 +1395,66 @@
           event.target.value = "";
           
         } catch (error) {
-          console.error("Error uploading PDF:", error);
+          console.error("Error uploading file:", error);
           alert(`Error: ${error.message}`);
           
           // Reset UI
-          uploadLabel.textContent = "📄 Upload PDF";
+          uploadLabel.textContent = "📄 Upload Resume (PDF, Word, TXT)";
           uploadLabel.classList.remove("loading");
           uploadLabel.classList.add("default");
           resumeTextarea.disabled = false;
-          resumeTextarea.placeholder = "Paste your resume text here or upload a PDF file... (Required)";
+          resumeTextarea.placeholder = "Paste your resume text here or upload a file (PDF, Word, or TXT)... (Required)";
           fileNameSpan.classList.add("hidden");
           fileNameSpan.classList.remove("success");
           event.target.value = "";
         }
       }
       
-      // Update tip text based on JD input to guide users
-      document.getElementById("jd").addEventListener("input", function() {
-        const jd = this.value.trim();
-        const tipText = document.getElementById("jdTipText");
-        if (!jd) {
-          tipText.textContent = "Leave empty to use the Web Job Search feature below instead.";
-        } else {
-          tipText.textContent = "Paste a job description to analyze match or generate a cover letter.";
+      // Expand JD input when button is clicked
+      function expandJDInput(containerId, textareaId, buttonId, buttonText) {
+        const container = document.getElementById(containerId);
+        const textarea = document.getElementById(textareaId);
+        const button = document.getElementById(buttonId);
+        
+        if (container && !container.classList.contains("expanded")) {
+          container.classList.add("expanded");
+          // Update button text
+          if (button) {
+            button.textContent = buttonText;
+          }
+          // Focus on textarea after expansion animation
+          setTimeout(() => {
+            if (textarea) {
+              textarea.focus();
+            }
+          }, 300);
+          return true; // Indicates it was just expanded
         }
-      });
+        return false; // Already expanded
+      }
       
       async function handleSubmit() {
-        const jd = document.getElementById("jd").value.trim();
+        const jdContainer = document.getElementById("analyzeJDContainer");
+        const jd = document.getElementById("analyzeJD").value.trim();
         const resume = document.getElementById("resume").value.trim();
         const btn = document.getElementById("analyzeBtn");
         const analysisOut = document.getElementById("analysisOut");
         const analysisResults = document.getElementById("analysisResults");
         const resumeTextarea = document.getElementById("resume");
+        const jdTextarea = document.getElementById("analyzeJD");
+        
+        // If JD input is not expanded, expand it and change button text (no validation on first click)
+        const wasJustExpanded = expandJDInput("analyzeJDContainer", "analyzeJD", "analyzeBtn", "🔍 Analyze Match");
+        if (wasJustExpanded) {
+          return; // Just expanded, don't proceed with validation
+        }
         
         // Warn user of empty resume input with better UX
         if (!resume) {
           // Highlight the resume textarea
           resumeTextarea.style.borderColor = "#f87171";
           resumeTextarea.focus();
-          alert("⚠️ Please paste your resume or upload a PDF file (required).");
+          alert("⚠️ Please paste your resume or upload a file (PDF, Word, or TXT) (required).");
           // Reset border color after a delay
           setTimeout(() => {
             resumeTextarea.style.borderColor = "rgba(99, 102, 241, 0.3)";
@@ -1220,10 +1462,9 @@
           return;
         }
         
-        // Scenario 1: Empty JD, resume input -> require JD for analysis
+        // Check if JD is provided (only warn if input is already expanded)
         if (!jd) {
           analysisResults.classList.add("hidden");
-          const jdTextarea = document.getElementById("jd");
           // Highlight the JD textarea
           jdTextarea.style.borderColor = "#f87171";
           jdTextarea.focus();
@@ -1337,8 +1578,8 @@
         
         // Add raw JSON view (collapsible)
         html += `
-          <details style="margin-top: 20px;">
-            <summary style="cursor: pointer; color: #64748b; font-size: 0.9em;">View Raw JSON</summary>
+          <details>
+            <summary>View Raw JSON</summary>
             <pre>${escapeHtml(JSON.stringify(analysis, null, 2))}</pre>
           </details>
         `;
@@ -1367,7 +1608,7 @@
           // Highlight the resume textarea
           resumeTextarea.style.borderColor = "#f87171";
           resumeTextarea.focus();
-          alert("⚠️ Please paste your resume or upload a PDF file to search for jobs.");
+          alert("⚠️ Please paste your resume or upload a file (PDF, Word, or TXT) to search for jobs.");
           // Reset border color after a delay
           setTimeout(() => {
             resumeTextarea.style.borderColor = "rgba(99, 102, 241, 0.3)";
@@ -1439,9 +1680,9 @@
         // Check if using mock data (URLs are "#")
         const isMockData = result.jobs.some(job => !job.url || job.url === "#");
         const mockDataWarning = isMockData ? `
-          <div class="result-card" style="background: #fef3c7; border-left: 4px solid #f59e0b; margin-bottom: 15px;">
+          <div class="result-card mock-warning">
             <div class="section-title">⚠️ Demo Mode</div>
-            <p style="margin: 8px 0; color: #92400e;">These are mock job listings for demonstration. Set <code>TAVILY_API_KEY</code> environment variable for real job search results.</p>
+            <p>These are mock job listings for demonstration. Set <code>TAVILY_API_KEY</code> environment variable for real job search results.</p>
           </div>
         ` : '';
         
@@ -1463,7 +1704,7 @@
           html += `
             <div class="job-card">
               <div class="job-header">
-                <div style="flex: 1;">
+                <div class="job-content">
                   <div class="job-title">${escapeHtml(job.title)}</div>
                   ${job.company ? `<div class="job-company">${escapeHtml(job.company)}</div>` : ''}
                 </div>
@@ -1477,21 +1718,21 @@
               </div>
               
               ${job.matchDetails ? `
-                <div style="margin: 12px 0;">
+                <div class="job-details-section">
                   ${job.matchDetails.matched_skills && job.matchDetails.matched_skills.length > 0 ? `
-                    <div style="margin-bottom: 8px;">
-                      <strong>✅ Matched:</strong>
-                      <div class="skills-list" style="margin-top: 4px;">
+                    <div class="job-details-item">
+                      <div class="section-title">✅ Matched Skills (${job.matchDetails.matched_skills.length})</div>
+                      <div class="skills-list skills-list-spacing">
                         ${job.matchDetails.matched_skills.map(s => `<span class="skill-tag">${escapeHtml(s)}</span>`).join("")}
                       </div>
                     </div>
                   ` : ''}
                   ${job.matchDetails.missing_skills && job.matchDetails.missing_skills.length > 0 ? `
-                    <div>
-                      <strong>❌ Missing:</strong>
-                      <div class="skills-list" style="margin-top: 4px;">
+                    <div class="job-details-item">
+                      <div class="section-title">❌ Missing Skills (${job.matchDetails.missing_skills.length})</div>
+                      <div class="skills-list skills-list-spacing">
                         ${job.matchDetails.missing_skills.slice(0, 5).map(s => `<span class="skill-tag missing">${escapeHtml(s)}</span>`).join("")}
-                        ${job.matchDetails.missing_skills.length > 5 ? `<span style="color: #64748b;">+${job.matchDetails.missing_skills.length - 5} more</span>` : ''}
+                        ${job.matchDetails.missing_skills.length > 5 ? `<span class="more-skills-count">+${job.matchDetails.missing_skills.length - 5} more</span>` : ''}
                       </div>
                     </div>
                   ` : ''}
@@ -1501,15 +1742,15 @@
               ${job.url && job.url !== "#" && job.url !== "about:blank" ? `
                 <a href="${escapeHtml(job.url)}" target="_blank" class="job-url">🔗 View Job Posting →</a>
               ` : `
-                <span class="job-url" style="color: #94a3b8; cursor: not-allowed;">🔗 Job URL not available</span>
+                <span class="job-url job-url-disabled">🔗 Job URL not available</span>
               `}
             </div>
           `;
         });
         
         html += `
-          <details style="margin-top: 20px;">
-            <summary style="cursor: pointer; color: #64748b; font-size: 0.9em;">View Raw JSON</summary>
+          <details>
+            <summary>View Raw JSON</summary>
             <pre>${escapeHtml(JSON.stringify(result, null, 2))}</pre>
           </details>
         `;
@@ -1523,7 +1764,7 @@
         const resultsDiv = document.getElementById("resumeStrengthResults");
         
         if (!resume) {
-          alert("⚠️ Please paste your resume or upload a PDF file first.");
+          alert("⚠️ Please paste your resume or upload a file (PDF, Word, or TXT) first.");
           document.getElementById("resume").focus();
           return;
         }
@@ -1614,14 +1855,20 @@
       // Cover Letter Generator
       async function generateCoverLetter() {
         const resume = document.getElementById("resume").value.trim();
-        const jd = document.getElementById("jd").value.trim();
+        const jd = document.getElementById("coverLetterJD").value.trim();
         const resultsDiv = document.getElementById("coverLetterResults");
         const resumeTextarea = document.getElementById("resume");
-        const jdTextarea = document.getElementById("jd");
+        const jdTextarea = document.getElementById("coverLetterJD");
+        
+        // If JD input is not expanded, expand it and change button text (no validation on first click)
+        const wasJustExpanded = expandJDInput("coverLetterJDContainer", "coverLetterJD", "coverLetterBtn", "✨ Generate Cover Letter");
+        if (wasJustExpanded) {
+          return; // Just expanded, don't proceed with validation
+        }
         
         // Validate resume input
         if (!resume) {
-          alert("⚠️ Please paste your resume or upload a PDF file first (required for cover letter generation).");
+          alert("⚠️ Please paste your resume or upload a file (PDF, Word, or TXT) first (required for cover letter generation).");
           resumeTextarea.style.borderColor = "#f87171";
           resumeTextarea.focus();
           setTimeout(() => {
@@ -1630,7 +1877,7 @@
           return;
         }
         
-        // Validate job description input
+        // Validate job description input (only warn if input is already expanded)
         if (!jd) {
           alert("⚠️ Please paste a job description to generate a cover letter (required).");
           jdTextarea.style.borderColor = "#f87171";
@@ -1678,7 +1925,7 @@
             <div style="background: rgba(30, 41, 59, 0.6); padding: 20px; border-radius: 12px; white-space: pre-wrap; line-height: 1.8; color: #e2e8f0; font-family: 'Georgia', serif; margin-bottom: 15px;">
 ${escapeHtml(coverLetter)}
             </div>
-            <button onclick="copyCoverLetter()" style="width: 100%; margin-top: 10px;">
+            <button onclick="copyCoverLetter(this)" style="width: 100%; margin-top: 10px;">
               📋 Copy to Clipboard
             </button>
           </div>
@@ -1688,19 +1935,18 @@ ${escapeHtml(coverLetter)}
         resultsDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }
       
-      function copyCoverLetter() {
+      function copyCoverLetter(button) {
         const coverLetterDiv = document.getElementById("coverLetterResults").querySelector("div[style*='white-space']");
         if (!coverLetterDiv) return;
         
-        const coverLetterText = coverLetterDiv.textContent;
+        const coverLetterText = coverLetterDiv.textContent.trim();
         navigator.clipboard.writeText(coverLetterText).then(() => {
-          const btn = event.target;
-          const originalText = btn.textContent;
-          btn.textContent = "✅ Copied!";
-          btn.style.background = "linear-gradient(135deg, #34d399 0%, #10b981 100%)";
+          const originalText = button.textContent;
+          button.textContent = "✅ Copied!";
+          button.style.background = "linear-gradient(135deg, #34d399 0%, #10b981 100%)";
           setTimeout(() => {
-            btn.textContent = originalText;
-            btn.style.background = "";
+            button.textContent = originalText;
+            button.style.background = "";
           }, 2000);
         }).catch(err => {
           alert("Failed to copy: " + err.message);

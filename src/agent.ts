@@ -560,33 +560,84 @@ Output JSON only:
       ? (Deno.env.get("GROQ_MODEL") || "llama-3.1-8b-instant")
       : (Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini");
     
-    const taskEvents = agent.runTask(prompt, modelName, undefined, { maxIterations: 3 });
-    for await (const ev of eachValueFrom(taskEvents)) {
-      const e = ev as TaskEventLike;
-      if (e.type === "text") {
-        resultText += e.content || "";
-      } else if (e.type === "message") {
-        const msg = e.message as MessageLike;
-        const blocks = msg?.content || [] as ContentBlock[];
-        for (const b of blocks) {
-          if (b?.type === "text" && typeof b.text === "string") {
-            resultText += b.text;
+    console.log(`📊 Analyzing resume strength using model: ${modelName} (${groqKey ? "Groq" : "OpenAI"})`);
+    console.log(`📏 Resume length: ${resumeText.length} chars`);
+    
+    let aiAnalysisFailed = false;
+    let failureReason = "";
+    
+    try {
+      const taskEvents = agent.runTask(prompt, modelName, undefined, { maxIterations: 3 });
+      for await (const ev of eachValueFrom(taskEvents)) {
+        const e = ev as TaskEventLike;
+        if (e.type === "text") {
+          resultText += e.content || "";
+        } else if (e.type === "message") {
+          const msg = e.message as MessageLike;
+          const blocks = msg?.content || [] as ContentBlock[];
+          for (const b of blocks) {
+            if (b?.type === "text" && typeof b.text === "string") {
+              resultText += b.text;
+            }
           }
+        } else if (e.type === "error") {
+          console.error("Task event error:", e);
+          aiAnalysisFailed = true;
+          failureReason = "Agent task error";
+          break;
         }
-      } else if (e.type === "error") {
-        console.error("Task event error:", e);
-        throw new Error(`Agent task error: ${JSON.stringify(e)}`);
       }
+    } catch (err: unknown) {
+      // Handle API errors similar to analyzeJDResume
+      aiAnalysisFailed = true;
+      if (err && typeof err === "object" && "status" in err) {
+        const apiError = err as { status?: number; code?: string; message?: string };
+        if (apiError.status === 429) {
+          if (apiError.code === "insufficient_quota") {
+            failureReason = "API quota exceeded";
+            console.error("❌ API quota exceeded. Using fallback parser.");
+          } else {
+            failureReason = "API rate limit exceeded";
+            console.warn("⚠️  API rate limit exceeded. Using fallback parser.");
+          }
+        } else if (apiError.status === 401) {
+          failureReason = "API authentication failed";
+          console.error("❌ API authentication failed. Using fallback parser.");
+        } else {
+          failureReason = `API error (${apiError.status})`;
+          console.warn(`⚠️  API error (${apiError.status}). Using fallback parser.`);
+        }
+      } else if (err instanceof Error) {
+        failureReason = err.message;
+        console.error("Agent error:", err.message);
+      } else {
+        failureReason = "Unknown error";
+        console.error("Unknown error in resume analysis:", err);
+      }
+      resultText = "";
     }
     
     // Parse JSON response
     let analysis: ResumeStrengthAnalysis | null = null;
-    if (resultText.length > 0) {
+    if (resultText.length > 0 && !aiAnalysisFailed) {
       try {
-        const jsonMatch = resultText.match(/\{[\s\S]*\}/);
+        // Try to find JSON in markdown code blocks first
+        let jsonMatch = resultText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (!jsonMatch) {
+          // If no code block, try to find JSON object directly
+          jsonMatch = resultText.match(/\{[\s\S]*?\}/);
+        }
+        // If still no match, try greedy match as fallback
+        if (!jsonMatch) {
+          jsonMatch = resultText.match(/\{[\s\S]*\}/);
+        }
+        
         if (jsonMatch) {
-          const parsed = JSON.parse(jsonMatch[0]);
+          const jsonStr = jsonMatch[1] || jsonMatch[0];
+          console.log(`📋 Found JSON in response (length: ${jsonStr.length} chars)`);
+          const parsed = JSON.parse(jsonStr);
           if (parsed.overall_score !== undefined) {
+            console.log(`✅ Successfully parsed JSON. Overall score: ${parsed.overall_score}`);
             analysis = {
               overall_score: Math.min(100, Math.max(0, parsed.overall_score || 0)),
               ats_score: Math.min(100, Math.max(0, parsed.ats_score || 0)),
@@ -597,18 +648,55 @@ Output JSON only:
               skill_diversity_score: Math.min(100, Math.max(0, parsed.skill_diversity_score || 0)),
               experience_depth_score: Math.min(100, Math.max(0, parsed.experience_depth_score || 0)),
             };
+          } else {
+            aiAnalysisFailed = true;
+            failureReason = "Invalid JSON structure (missing overall_score)";
+            console.warn("⚠️  Parsed JSON missing required fields, using fallback");
+            console.warn("Parsed JSON keys:", Object.keys(parsed));
+          }
+        } else {
+          aiAnalysisFailed = true;
+          failureReason = "No valid JSON found in response";
+          console.warn("⚠️  No valid JSON found in AI response, using fallback");
+          if (resultText.length > 0 && resultText.length < 500) {
+            console.warn("Response text (first 300 chars):", resultText.substring(0, 300));
+          } else if (resultText.length > 0) {
+            console.warn("Response text (first 300 chars):", resultText.substring(0, 300));
+            console.warn("Response text (last 300 chars):", resultText.substring(resultText.length - 300));
           }
         }
       } catch (err) {
-        // Fall through to default analysis
+        aiAnalysisFailed = true;
+        failureReason = err instanceof Error ? err.message : "JSON parsing error";
+        console.warn("⚠️  JSON parsing error, using fallback:", err);
+        if (err instanceof Error && err.message.includes("JSON")) {
+          console.warn("Response text (first 500 chars):", resultText.substring(0, 500));
+        }
       }
+    } else if (resultText.length === 0 && !aiAnalysisFailed) {
+      aiAnalysisFailed = true;
+      failureReason = "Empty response from AI";
+      console.warn("⚠️  Empty response from AI, using fallback");
+    }
+    
+    // Log API response status
+    if (resultText.length > 0 && !aiAnalysisFailed) {
+      console.log(`✅ Resume analysis API call succeeded. Response length: ${resultText.length} chars`);
+    } else if (aiAnalysisFailed) {
+      console.error(`❌ Resume analysis API call failed: ${failureReason}`);
+    } else {
+      console.warn("⚠️  Resume analysis API call completed but no text was received");
     }
     
     // Fallback if AI analysis fails
-    if (!analysis) {
+    if (!analysis || aiAnalysisFailed) {
       const skills = fallbackParseSkills(resumeText);
       const skillCount = skills.length;
       const overallScore = Math.min(100, Math.max(0, Math.round((skillCount / 20) * 100)));
+      
+      const fallbackSummary = failureReason 
+        ? `Basic resume analysis completed. AI analysis unavailable (${failureReason}). Using fallback parser.`
+        : "Basic resume analysis completed. Consider using AI analysis for more detailed insights.";
       
       analysis = {
         overall_score: overallScore,
@@ -622,7 +710,7 @@ Output JSON only:
           "Highlight relevant experience",
           "Add industry keywords"
         ],
-        summary: "Basic resume analysis completed. Consider using AI analysis for more detailed insights.",
+        summary: fallbackSummary,
         skill_diversity_score: Math.min(100, skillCount * 10),
         experience_depth_score: 60,
       };
@@ -643,6 +731,14 @@ export async function generateCoverLetter(
   jobDescription: string,
   companyName?: string
 ): Promise<string> {
+  const groqKey = Deno.env.get("GROQ_API_KEY");
+  const modelName = groqKey 
+    ? (Deno.env.get("GROQ_MODEL") || "llama-3.1-8b-instant")
+    : (Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini");
+  
+  console.log(`📧 Generating cover letter using model: ${modelName} (${groqKey ? "Groq" : "OpenAI"})`);
+  console.log(`📏 Input sizes - JD: ${jobDescription.length} chars, Resume: ${resumeText.length} chars`);
+  
   try {
     const zypherContext = await createZypherContext(Deno.cwd());
     const provider = getProviderFromEnv();
@@ -653,7 +749,7 @@ export async function generateCoverLetter(
     const agent = new ZypherAgent(zypherContext, provider);
     
     const companyContext = companyName ? `Company: ${companyName}\n\n` : "";
-    const prompt = `Generate a professional, personalized cover letter.
+    const prompt = `Write a professional cover letter based on the job description and resume provided below.
 
 ${companyContext}Job Description:
 ${jobDescription}
@@ -661,52 +757,99 @@ ${jobDescription}
 Resume:
 ${resumeText}
 
-Requirements:
-- 3-4 paragraphs (approximately 250-350 words)
-- Professional and enthusiastic tone
-- First paragraph: Express interest and mention the specific role
-- Second paragraph: Highlight 2-3 most relevant experiences/skills from resume that match the job
-- Third paragraph: Show understanding of the company/role and what you can contribute
-- Fourth paragraph (optional): Closing statement with call to action
-- Use "I" and "my" (first person)
-- Be specific and avoid generic phrases
-- Match the tone of the job description
-- Do NOT include placeholder text like [Your Name] or [Date]
-- Start directly with the greeting (e.g., "Dear Hiring Manager,")
+IMPORTANT: Your response must contain ONLY the cover letter text. Do not repeat the instructions, job description, or resume content.
 
-Output the cover letter text only, no JSON, no markdown formatting, just the letter text.`;
+The cover letter should:
+- Start with "Dear Hiring Manager,"
+- Be 3-4 paragraphs (250-350 words)
+- First paragraph: Express interest in the specific role
+- Second paragraph: Highlight 2-3 relevant experiences/skills (reference naturally, do not copy-paste)
+- Third paragraph: Show understanding of the company/role and your potential contribution
+- Fourth paragraph: Closing statement with call to action
+- End with "Sincerely," followed by a blank line
+- Use first person ("I", "my")
+- Be professional and enthusiastic
+- Match the tone of the job description
+- Do not include placeholders like [Your Name] or [Date]
+
+Begin your response now with "Dear Hiring Manager,"`;
 
     let resultText = "";
     type ContentBlock = { type?: string; text?: string };
     type MessageLike = { content?: ContentBlock[] };
     type TaskEventLike = { type: string; content?: string; message?: MessageLike };
     
-    const groqKey = Deno.env.get("GROQ_API_KEY");
-    const modelName = groqKey 
-      ? (Deno.env.get("GROQ_MODEL") || "llama-3.1-8b-instant")
-      : (Deno.env.get("OPENAI_MODEL") || "gpt-4o-mini");
+    let apiCallSucceeded = false;
+    let apiErrorOccurred = false;
+    let apiErrorDetails = "";
     
-    const taskEvents = agent.runTask(prompt, modelName, undefined, { maxIterations: 3 });
-    for await (const ev of eachValueFrom(taskEvents)) {
-      const e = ev as TaskEventLike;
-      if (e.type === "text") {
-        resultText += e.content || "";
-      } else if (e.type === "message") {
-        const msg = e.message as MessageLike;
-        const blocks = msg?.content || [] as ContentBlock[];
-        for (const b of blocks) {
-          if (b?.type === "text" && typeof b.text === "string") {
-            resultText += b.text;
+    try {
+      const taskEvents = agent.runTask(prompt, modelName, undefined, { maxIterations: 3 });
+      for await (const ev of eachValueFrom(taskEvents)) {
+        const e = ev as TaskEventLike;
+        if (e.type === "text") {
+          resultText += e.content || "";
+          apiCallSucceeded = true;
+        } else if (e.type === "message") {
+          const msg = e.message as MessageLike;
+          const blocks = msg?.content || [] as ContentBlock[];
+          for (const b of blocks) {
+            if (b?.type === "text" && typeof b.text === "string") {
+              resultText += b.text;
+              apiCallSucceeded = true;
+            }
           }
+        } else if (e.type === "error") {
+          apiErrorOccurred = true;
+          apiErrorDetails = JSON.stringify(e);
+          console.error("❌ Cover letter generation - Task event error:", e);
+          throw new Error(`Agent task error: ${JSON.stringify(e)}`);
         }
-      } else if (e.type === "error") {
-        console.error("Task event error:", e);
-        throw new Error(`Agent task error: ${JSON.stringify(e)}`);
       }
+    } catch (err: unknown) {
+      apiErrorOccurred = true;
+      if (err && typeof err === "object" && "status" in err) {
+        const apiError = err as { status?: number; code?: string; message?: string };
+        apiErrorDetails = `API Error ${apiError.status}: ${apiError.code || apiError.message || "Unknown"}`;
+        
+        if (apiError.status === 429) {
+          if (apiError.code === "insufficient_quota") {
+            console.error("❌ Cover letter - API quota exceeded");
+          } else {
+            console.warn("⚠️  Cover letter - API rate limit exceeded");
+          }
+        } else if (apiError.status === 401) {
+          console.error("❌ Cover letter - API authentication failed");
+        } else {
+          console.warn(`⚠️  Cover letter - API error (${apiError.status})`);
+        }
+      } else if (err instanceof Error) {
+        apiErrorDetails = err.message;
+        console.error("❌ Cover letter - Agent error:", err.message);
+      } else {
+        apiErrorDetails = "Unknown error";
+        console.error("❌ Cover letter - Unknown error:", err);
+      }
+      throw err; // Re-throw to be handled by outer catch
+    }
+    
+    // Log diagnostic information
+    if (apiCallSucceeded) {
+      console.log(`✅ Cover letter API call succeeded. Response length: ${resultText.length} chars`);
+      if (resultText.length > 0 && resultText.length < 500) {
+        console.log("📝 First 200 chars of response:", resultText.substring(0, 200));
+      }
+    } else if (apiErrorOccurred) {
+      console.error(`❌ Cover letter API call failed: ${apiErrorDetails}`);
+    } else {
+      console.warn("⚠️  Cover letter API call completed but no text was received");
     }
     
     // Clean up the response - remove any JSON formatting or markdown
     let coverLetter = resultText.trim();
+    
+    // Remove leading/trailing quotes
+    coverLetter = coverLetter.replace(/^["']+|["']+$/g, '');
     
     // Remove markdown code blocks if present
     coverLetter = coverLetter.replace(/```[\s\S]*?```/g, '');
@@ -723,8 +866,232 @@ Output the cover letter text only, no JSON, no markdown formatting, just the let
       }
     }
     
-    // Fallback if empty
+    // Find the first occurrence of "Dear" - this should be the start of the actual letter
+    let firstDearIdx = coverLetter.toLowerCase().indexOf('dear');
+    if (firstDearIdx !== -1) {
+      // Extract everything from "Dear" onwards
+      coverLetter = coverLetter.substring(firstDearIdx);
+      
+      // Remove the greeting entirely (Dear Hiring Manager, etc.)
+      const greetingPattern = /^dear\s+[^,]+,\s*/i;
+      coverLetter = coverLetter.replace(greetingPattern, '');
+      
+      // Also check for duplicate greetings and remove all
+      const dearPattern = /^dear\s+hiring\s+manager,?\s*/i;
+      while (coverLetter.match(dearPattern)) {
+        coverLetter = coverLetter.replace(dearPattern, '');
+      }
+    }
+    
+    // Remove all prompt/instruction text that might appear before or after the letter
+    const promptMarkers = [
+      'You are a professional cover letter writer',
+      'CRITICAL INSTRUCTIONS:',
+      'Content Requirements:',
+      'Output ONLY the cover letter',
+      'Begin your response now',
+      'IMPORTANT: Your response must contain',
+      'Write a professional cover letter',
+      'The cover letter should:',
+      'Start with "Dear Hiring Manager,"',
+      'Be 3-4 paragraphs',
+      'First paragraph:',
+      'Second paragraph:',
+      'Third paragraph:',
+      'Fourth paragraph:',
+      'End with "Sincerely,"',
+      'Use first person',
+      'Be professional and enthusiastic',
+      'Match the tone',
+      'Do not include placeholders'
+    ];
+    
+    // Remove prompt markers that appear in the text
+    for (const marker of promptMarkers) {
+      const markerIdx = coverLetter.toLowerCase().indexOf(marker.toLowerCase());
+      if (markerIdx !== -1) {
+        // Check if "Dear" comes after this marker
+        const dearAfterMarker = coverLetter.toLowerCase().indexOf('dear', markerIdx);
+        if (dearAfterMarker > markerIdx) {
+          // Remove everything from marker to "Dear"
+          coverLetter = coverLetter.substring(0, markerIdx) + coverLetter.substring(dearAfterMarker);
+        } else {
+          // Marker is after "Dear", might be in the letter content - be more careful
+          // Only remove if it's clearly a bullet point or instruction format
+          if (marker.startsWith('-') || marker.includes(':')) {
+            const beforeMarker = coverLetter.substring(0, markerIdx);
+            const afterMarker = coverLetter.substring(markerIdx + marker.length);
+            // Check if there's a "Dear" in the before part
+            if (beforeMarker.toLowerCase().includes('dear')) {
+              // Keep only up to the marker
+              coverLetter = beforeMarker;
+            }
+          }
+        }
+      }
+    }
+    
+    // Remove job description and resume content markers
+    const contentMarkers = [
+      'Job Description:',
+      'Resume:',
+      'Company:',
+      'Education',
+      'Technical Skills',
+      'Experience',
+      'Projects',
+      'Extra-Curricular Activities',
+      'About Me'
+    ];
+    
+    // Find the first "Dear" again after cleanup
+    const cleanDearIdx = coverLetter.toLowerCase().indexOf('dear');
+    if (cleanDearIdx !== -1) {
+      // Check if any content markers appear before "Dear"
+      for (const marker of contentMarkers) {
+        const markerIdx = coverLetter.indexOf(marker);
+        if (markerIdx !== -1 && markerIdx < cleanDearIdx) {
+          // Remove everything from marker to "Dear"
+          coverLetter = coverLetter.substring(cleanDearIdx);
+          break;
+        }
+      }
+    }
+    
+    // Remove resume-specific content that might have been included
+    // Look for resume sections that are clearly not part of a cover letter
+    const resumeSections = [
+      'Felix Ng',
+      '+1 (778)',
+      'FelixNg1022@gmail.com',
+      'University of British Columbia',
+      'Bachelors in Computer Science',
+      'Languages:',
+      'Frameworks:',
+      'Developer Tools:',
+      'Research Assistant',
+      'IT Director',
+      'JobMatch AI',
+      'Presently',
+      'Schedulii'
+    ];
+    
+    // Find where the letter actually starts and ends
+    const letterStart = coverLetter.toLowerCase().indexOf('dear');
+    if (letterStart !== -1) {
+      let letterEnd = coverLetter.length;
+      
+      // Look for resume content after the letter closing
+      const closingPatterns = [
+        /Sincerely,?\s*$/i,
+        /(Best regards|Regards|Yours sincerely),?\s*$/i,
+        /Thank you for considering my application[^.]*$/i
+      ];
+      
+      let lastClosingIdx = -1;
+      for (const pattern of closingPatterns) {
+        const match = coverLetter.match(pattern);
+        if (match && match.index !== undefined) {
+          lastClosingIdx = Math.max(lastClosingIdx, match.index + match[0].length);
+        }
+      }
+      
+      // Check if resume content appears after the closing
+      for (const section of resumeSections) {
+        const sectionIdx = coverLetter.indexOf(section);
+        if (sectionIdx !== -1) {
+          if (lastClosingIdx !== -1 && sectionIdx > lastClosingIdx) {
+            // Resume content after closing - remove it
+            letterEnd = Math.min(letterEnd, sectionIdx);
+          } else if (sectionIdx < letterStart) {
+            // Resume content before "Dear" - already handled, but ensure we start at "Dear"
+            continue;
+          } else if (sectionIdx > letterStart && sectionIdx < letterStart + 100) {
+            // Resume content very early in letter - might be accidental inclusion
+            // Check if it's part of a sentence or standalone
+            const beforeSection = coverLetter.substring(letterStart, sectionIdx).trim();
+            if (beforeSection.length < 50) {
+              // Very short text before resume section, likely accidental
+              const nextDear = coverLetter.toLowerCase().indexOf('dear', sectionIdx);
+              if (nextDear > sectionIdx) {
+                coverLetter = coverLetter.substring(nextDear);
+              }
+            }
+          }
+        }
+      }
+      
+      // Extract only the letter portion
+      if (letterEnd < coverLetter.length) {
+        coverLetter = coverLetter.substring(letterStart, letterEnd).trim();
+      } else {
+        coverLetter = coverLetter.substring(letterStart).trim();
+      }
+    }
+    
+    // Remove all greetings (Dear Hiring Manager, etc.) - remove entirely
+    const greetingPatterns = [
+      /^dear\s+[^,]+,\s*/i,
+      /^dear\s+hiring\s+manager,?\s*/i,
+      /^dear\s+[^,\n]+,\s*/i
+    ];
+    
+    for (const pattern of greetingPatterns) {
+      // Remove all occurrences of greetings
+      while (coverLetter.match(pattern)) {
+        coverLetter = coverLetter.replace(pattern, '');
+      }
+    }
+    
+    // Remove all closing signatures (Sincerely, Best regards, etc.) and names - remove entirely
+    const closingPatterns = [
+      /\n\s*(Sincerely|Best regards|Regards|Yours sincerely|Yours truly),?\s*\n\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2}\s*$/i,
+      /\n\s*(Sincerely|Best regards|Regards|Yours sincerely|Yours truly),?\s*$/i,
+      /(Sincerely|Best regards|Regards|Yours sincerely|Yours truly),?\s*\n\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,2}\s*$/i,
+      /(Sincerely|Best regards|Regards|Yours sincerely|Yours truly),?\s*$/i
+    ];
+    
+    for (const pattern of closingPatterns) {
+      coverLetter = coverLetter.replace(pattern, '');
+    }
+    
+    // Also remove any standalone names at the end (likely signature)
+    const nameAtEndPattern = /\n\s*[A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2}\s*$/;
+    coverLetter = coverLetter.replace(nameAtEndPattern, '');
+    
+    // Final cleanup: remove duplicate content
+    // If the letter appears twice, keep only the first occurrence
+    const dearMatches = [];
+    let searchIdx = 0;
+    while (true) {
+      const idx = coverLetter.toLowerCase().indexOf('dear', searchIdx);
+      if (idx === -1) break;
+      dearMatches.push(idx);
+      searchIdx = idx + 1;
+    }
+    
+    if (dearMatches.length > 1) {
+      // Multiple "Dear" found - likely duplicate letter
+      // Keep only the first complete letter (up to second "Dear")
+      coverLetter = coverLetter.substring(0, dearMatches[1]).trim();
+    }
+    
+    // Log final result
+    console.log(`📝 Cover letter generated. Final length: ${coverLetter.length} chars`);
+    if (coverLetter.length > 0 && coverLetter.length < 300) {
+      console.log("⚠️  Warning: Cover letter seems short. First 150 chars:", coverLetter.substring(0, 150));
+    }
+    
+    // Check if the response looks suspicious (contains prompt markers)
+    const suspiciousMarkers = ['Job Description:', 'Resume:', 'CRITICAL INSTRUCTIONS', 'Content Requirements'];
+    const hasSuspiciousContent = suspiciousMarkers.some(marker => coverLetter.includes(marker));
+    if (hasSuspiciousContent) {
+      console.warn("⚠️  Warning: Cover letter response may contain prompt/instruction text. Cleanup applied.");
+    }
+    
+    // Fallback if empty or too short
     if (!coverLetter || coverLetter.length < 100) {
+      console.warn("⚠️  Cover letter too short or empty, using fallback template");
       coverLetter = `Dear Hiring Manager,
 
 I am writing to express my strong interest in the position. Based on the job description, I believe my background and skills align well with your requirements.
@@ -739,7 +1106,11 @@ Sincerely,
     
     return coverLetter.trim();
   } catch (err) {
-    console.error("Error generating cover letter:", err);
+    console.error("❌ Error in cover letter generation:", err);
+    if (err instanceof Error) {
+      console.error("Error message:", err.message);
+      console.error("Error stack:", err.stack);
+    }
     throw err;
   }
 }

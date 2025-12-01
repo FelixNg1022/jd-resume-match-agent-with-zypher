@@ -1,6 +1,6 @@
 // src/server.ts
 import { analyzeJDResume, searchAndRankJobs, analyzeResumeStrength, generateCoverLetter } from "./agent.ts";
-import { extractTextFromPDF } from "./tools/pdf_parser.ts";
+import { extractTextFromFile } from "./tools/file_parser.ts";
 
 // Helper function to extract company name from job description
 function extractCompanyNameFromJD(jd: string): string | undefined {
@@ -53,36 +53,28 @@ async function start() {
         if (req.method === "POST" && url.pathname === "/upload-pdf") {
           try {
             const formData = await req.formData();
-            const pdfFile = formData.get("pdf");
+            const file = formData.get("pdf") || formData.get("file");
             
-            if (!pdfFile || !(pdfFile instanceof File)) {
-              return new Response(JSON.stringify({ error: "No PDF file provided" }), {
+            if (!file || !(file instanceof File)) {
+              return new Response(JSON.stringify({ error: "No file provided" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
               });
             }
             
-            // Check file type
-            if (pdfFile.type !== "application/pdf") {
-              return new Response(JSON.stringify({ error: "File must be a PDF" }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" },
-              });
-            }
+            // Read file as Uint8Array
+            const arrayBuffer = await file.arrayBuffer();
+            const fileBuffer = new Uint8Array(arrayBuffer);
             
-            // Read PDF file as Uint8Array
-            const arrayBuffer = await pdfFile.arrayBuffer();
-            const pdfBuffer = new Uint8Array(arrayBuffer);
-            
-            // Extract text from PDF
-            const extractedText = await extractTextFromPDF(pdfBuffer);
+            // Extract text from file (supports PDF, Word, TXT)
+            const extractedText = await extractTextFromFile(fileBuffer, file.name, file.type);
             
             return new Response(JSON.stringify({ text: extractedText }), {
               headers: { "Content-Type": "application/json" },
             });
           } catch (err) {
-            console.error("Error processing PDF upload:", err);
-            return new Response(JSON.stringify({ error: `Failed to parse PDF: ${err instanceof Error ? err.message : String(err)}` }), {
+            console.error("Error processing file upload:", err);
+            return new Response(JSON.stringify({ error: `Failed to parse file: ${err instanceof Error ? err.message : String(err)}` }), {
               status: 500,
               headers: { "Content-Type": "application/json" },
             });

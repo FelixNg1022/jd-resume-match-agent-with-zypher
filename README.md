@@ -13,9 +13,9 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 - **AI-Powered Skill Matching** - Leverages LLaMA (Meta's open-source LLM) via Groq inference API for intelligent analysis
 - **Fit Score Calculation** - Quantified match score (0-100) based on technical skill alignment
 - **Smart Job Discovery** - Web search powered by Tavily API to find relevant opportunities
-- **Intelligent Filtering** - Automatically excludes job boards, surfaces direct company postings only
+- **Intelligent Filtering** - Automatically excludes 36+ job boards, surfaces direct company postings only
 - **Resume Strength Analysis** - Comprehensive resume quality assessment with ATS compatibility scoring
-- **AI Cover Letter Generator** - Personalized cover letters tailored to specific job descriptions
+- **AI Cover Letter Generator** - Personalized cover letters tailored to specific job descriptions (body text only, no greeting/closing)
 
 ### User Experience
 
@@ -25,17 +25,18 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 - **Fully Responsive** - Optimized for desktop, tablet, and mobile devices with touch-friendly controls
 - **Card-Based Feature Layout** - Organized feature cards with clear requirements and descriptions for intuitive navigation
 - **Unified Web Interface** - Single-page application with seamless workflow between all features
-- **Shared Input System** - Resume and Job Description inputs shared across all features for consistency
-- **PDF Resume Upload** - Upload your resume as a PDF file for automatic text extraction
+- **Multi-Format Resume Upload** - Upload your resume as PDF, Word (DOCX/DOC), or TXT file for automatic text extraction
 - **Dual Result Display** - View analysis results and job search results simultaneously
 - **Smart Validation** - Visual feedback and clear error messages for better UX
 - **Real-time Analysis** - Streaming responses with live progress indicators
+- **Copy to Clipboard** - One-click copy for generated cover letters
 - **Robust Fallback System** - Local parser ensures functionality even when API quotas are exceeded
 
 ### Technical Excellence
 
 - **Type-Safe Development** - Built with TypeScript on Deno runtime
 - **Production-Ready** - Error handling, validation, and graceful degradation built-in
+- **Comprehensive Logging** - Detailed diagnostic logging for troubleshooting API issues
 
 ## 🚀 Quick Start
 
@@ -93,18 +94,24 @@ Open <http://localhost:8000> in your browser.
 
 1. **Add your resume** (required for all features) - You can either:
    - **Paste your resume text** directly into the textarea, or
-   - **Upload a PDF file** using the "📄 Upload PDF" button (text will be automatically extracted)
+   - **Upload a file** using the "📄 Upload Resume (PDF, Word, TXT)" button:
+     - **PDF files** (`.pdf`) - Full support
+     - **Word documents** (`.docx`, `.doc`) - DOCX fully supported, DOC with limited support
+     - **Text files** (`.txt`) - Full support
+   - Text will be automatically extracted and populated into the textarea
 
-2. **Add job description** (optional, required for some features):
-   - Paste a job description in the textarea below the resume
-   - Required for "Analyze Match" and "Cover Letter Generator"
-   - Optional for "Web Job Search"
+2. **Add job description** (required for some features):
+   - For "Analyze Match" and "Cover Letter Generator": Click the feature button to expand a job description input box
+   - Each feature has its own dedicated job description input
+   - Paste the job description in the expanded input box
 
 3. **Choose a feature:**
 
    **📊 Analyze Match** (Core Feature)
    - Requires: Resume + Job Description
-   - Get fit score, matched/missing skills, and personalized improvement suggestions
+   - Click "📝 Fill in Job Description" to expand JD input
+   - Button changes to "🔍 Analyze Match" after JD input appears
+   - Get fit score, matched/missing skills (color-coded: green for matched, red for missing), and personalized improvement suggestions
    - Results displayed within the feature card
 
    **🔍 Web Job Search** (Core Feature)
@@ -120,8 +127,11 @@ Open <http://localhost:8000> in your browser.
 
    **✍️ AI Cover Letter Generator** (AI-Powered Tool)
    - Requires: Resume + Job Description
-   - Generate a personalized cover letter tailored to the specific job description
+   - Click "📝 Fill in Job Description" to expand JD input
+   - Button changes to "✨ Generate Cover Letter" after JD input appears
+   - Generates personalized cover letter body text (no greeting/closing - just the content)
    - Company name automatically extracted from job description
+   - One-click copy to clipboard functionality
    - Results displayed within the feature card
 
 **Note:** All features can run independently and simultaneously. Results are displayed within their respective feature cards, allowing you to use multiple features at once.
@@ -136,9 +146,9 @@ jobmatch-ai/
 │   ├── agent.ts              # Core Zypher agent logic (analysis, job search, resume strength, cover letter)
 │   ├── server.ts             # HTTP server & routing
 │   └── tools/
+│       ├── file_parser.ts    # Multi-format file text extraction (PDF, Word, TXT)
 │       ├── job_search.ts     # Tavily integration
-│       ├── local_parser.ts   # Fallback skill parser
-│       └── pdf_parser.ts     # PDF text extraction
+│       └── local_parser.ts   # Fallback skill parser
 ├── sample/                   # Sample data files
 ├── index.html                # Modern responsive web interface
 ├── deno.json                 # Configuration
@@ -164,12 +174,17 @@ jobmatch-ai/
 **Additional Libraries**
 
 - **pdf-parse** - PDF text extraction for resume uploads
+- **mammoth** - Word document (DOCX) text extraction
 
 ### How It Works
 
 1. **Resume Input**
-   - Users can paste resume text or upload a PDF file
-   - PDF files are automatically parsed to extract text content
+   - Users can paste resume text or upload a file (PDF, Word, or TXT)
+   - Files are automatically parsed to extract text content:
+     - **PDF**: Uses `pdf-parse` library
+     - **Word (DOCX)**: Uses `mammoth` library
+     - **Word (DOC)**: Limited support, may require conversion to DOCX
+     - **TXT**: Direct text extraction
    - Extracted text is populated into the resume textarea
 
 2. **Agent Initialization**
@@ -182,6 +197,7 @@ jobmatch-ai/
    - Structured prompt engineering for consistent JSON output
    - Streaming response processing with event accumulation
    - Post-processing: filters non-technical terms, validates skill matches, auto-corrects errors
+   - Comprehensive error handling with detailed logging
 
 4. **Job Discovery**
    - Tavily API searches web for relevant positions
@@ -195,16 +211,20 @@ jobmatch-ai/
    - ATS compatibility scoring
    - Identifies strengths, weaknesses, and improvement areas
    - Provides actionable suggestions for enhancement
+   - Falls back to local parser if AI analysis fails
 
 6. **Cover Letter Generation**
    - AI-generated personalized cover letters
    - Automatically extracts company name from job description
    - Tailored to match resume and job requirements
-   - Professional formatting and structure
+   - Outputs clean body text only (greeting and closing removed for simplicity)
+   - Advanced cleanup to remove any prompt text or instructions
+   - One-click copy to clipboard functionality
 
 7. **Resilience**
    - Automatic fallback to local keyword-based parser on API failures
    - Graceful degradation maintains core functionality
+   - Detailed diagnostic logging for troubleshooting
 
 ## 🐛 Troubleshooting
 
@@ -215,8 +235,10 @@ jobmatch-ai/
 | **Mock job data shown** | Set `TAVILY_API_KEY` for real job search results |
 | **Port 8000 in use** | Use `PORT=9001 deno task run:server` or kill existing process |
 | **Import errors** | Always use `deno task run:server` (includes proper config) |
-| **Empty resume warning** | Resume field will highlight in red if empty; paste text or upload PDF |
-| **PDF upload fails** | Ensure file is a valid PDF; check browser console for detailed errors |
+| **Empty resume warning** | Resume field will highlight in red if empty; paste text or upload file |
+| **File upload fails** | Ensure file is PDF, DOCX, DOC, or TXT; check browser console for detailed errors |
+| **Cover letter includes prompt text** | This is a known issue with some LLM responses; cleanup logic should remove it automatically |
+| **Resume analysis shows fallback message** | Check server console logs for specific error (quota, rate limit, auth, etc.) |
 
 ## 📋 Important Notes
 
@@ -224,9 +246,15 @@ jobmatch-ai/
 - **Skill Filtering:** Only technical skills are analyzed (benefits, salary, etc. are excluded)
 - **Job Board Filtering:** Filters by job board name (e.g., "glassdoor") to catch all domain variations (.com, .ca, .co.uk, etc.)
 - **Score Variance:** LLM probabilistic nature may cause ±3-5 point variations (expected behavior)
-- **PDF Parsing:** PDF uploads extract all text content. Some formatting (tables, columns) may be simplified, but all text is preserved for analysis
+- **File Parsing:** 
+  - PDF uploads extract all text content. Some formatting (tables, columns) may be simplified, but all text is preserved for analysis
+  - Word DOCX files are fully supported
+  - Word DOC files (older format) have limited support - conversion to DOCX or PDF is recommended
+  - TXT files are directly extracted
 - **Multiple Operations:** You can run multiple analyses or job searches - each new operation updates its respective results section
 - **Simultaneous Results:** Analysis and job search results are displayed in separate sections and can be viewed simultaneously
+- **Cover Letter Format:** Generated cover letters include only the body text (no greeting or closing) for maximum flexibility
+- **Diagnostic Logging:** Server console includes detailed logging for API calls, errors, and response processing to aid in troubleshooting
 
 ## 🎯 Assessment Deliverables
 
