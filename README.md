@@ -20,13 +20,14 @@ An AI-powered job matching agent built with **CoreSpeed's Zypher framework** tha
 ### User Experience
 
 - **Futuristic Dark Mode Design** - Modern AI-themed interface with prominent animated gradients, glowing effects, and futuristic aesthetics
-- **Animated Visual Effects** - Dynamic gradient animations, shimmer effects, glowing borders, and scanline overlays for a cutting-edge look
+- **Animated Visual Effects** - Dynamic gradient animations, shimmer effects on logo and text, glowing borders, and scanline overlays for a cutting-edge look
 - **Glassmorphism & Depth** - Multi-layer shadows, backdrop blur effects, and gradient borders create a sophisticated 3D appearance
-- **Fully Responsive** - Optimized for desktop, tablet, and mobile devices with touch-friendly controls
-- **Card-Based Feature Layout** - Organized feature cards with clear requirements and descriptions for intuitive navigation
-- **Unified Web Interface** - Single-page application with seamless workflow between all features
+- **One-Page Progressive Disclosure** - Seamless single-page experience with smooth transitions between states
+- **Desktop-Optimized Layout** - Full-width design optimized for desktop screens with drag-to-resize panels
+- **AI Assistant-Like Interface** - Conversational buttons and friendly, passionate tone throughout
 - **Multi-Format Resume Upload** - Upload your resume as PDF, Word (DOCX/DOC), or TXT file for automatic text extraction
-- **Dual Result Display** - View analysis results and job search results simultaneously
+- **Auto-Running Features** - Resume strength analysis and job search run automatically after starting
+- **Side-by-Side Results** - View analysis results and job search results simultaneously with resizable panels
 - **Smart Validation** - Visual feedback and clear error messages for better UX
 - **Real-time Analysis** - Streaming responses with live progress indicators
 - **Copy to Clipboard** - One-click copy for generated cover letters
@@ -88,53 +89,47 @@ deno task run:server
 
 Open <http://localhost:8000> in your browser.
 
-> **Note:** The interface features a futuristic dark mode design with prominent animated gradients, glowing effects, and modern AI aesthetics. It's fully responsive and works seamlessly on desktop, tablet, and mobile devices. The design includes dynamic gradient animations, shimmer effects on text, glowing borders, scanline overlays, and sophisticated glassmorphism effects for a cutting-edge user experience.
+> **Note:** The interface features a futuristic dark mode design with prominent animated gradients, glowing effects, and modern AI aesthetics. The design includes dynamic gradient animations (8-10s cycles), shimmer effects on the logo and "JobMatch AI" text (2s cycles), glowing borders, scanline overlays, and sophisticated glassmorphism effects for a cutting-edge user experience. The layout is optimized for desktop screens with drag-to-resize panels for side-by-side content.
 
 ### Usage Flow
 
 1. **Add your resume** (required for all features) - You can either:
    - **Paste your resume text** directly into the textarea, or
-   - **Upload a file** using the "📄 Upload Resume (PDF, Word, TXT)" button:
+   - **Upload a file** using the "📄 Upload Your Resume - I'll Take It From Here!" button:
      - **PDF files** (`.pdf`) - Full support
      - **Word documents** (`.docx`, `.doc`) - DOCX fully supported, DOC with limited support
      - **Text files** (`.txt`) - Full support
    - Text will be automatically extracted and populated into the textarea
+   - Button shows "✅ Upload Successful! Your Resume is Ready" after successful upload
 
-2. **Add job description** (required for some features):
-   - For "Analyze Match" and "Cover Letter Generator": Click the feature button to expand a job description input box
-   - Each feature has its own dedicated job description input
-   - Paste the job description in the expanded input box
+2. **Start JobMatch AI:**
+   - Click "🚀 Let's Get Started! I'm Ready to Help You Find Your Dream Job"
+   - The resume input disappears with a smooth fade-out transition
+   - **Resume Strength Analysis** appears on the left (runs automatically)
+   - **Job Search** appears on the right (runs automatically without keywords)
+   - Both features run simultaneously and display results side-by-side
 
-3. **Choose a feature:**
+3. **Refine Job Search** (optional):
+   - Scroll down to see the "🎯 Refine Your Job Search" section
+   - Enter optional keywords: Job Type/Role, Location, Additional Keywords
+   - Click "🔍 Perfect! Let me find amazing opportunities that match exactly what you're looking for"
+   - New job results appear in the scrollable wrapper above the refine section
+   - Input fields clear automatically after search
 
-   **📊 Analyze Match** (Core Feature)
-   - Requires: Resume + Job Description
-   - Click "📝 Fill in Job Description" to expand JD input
-   - Button changes to "🔍 Analyze Match" after JD input appears
-   - Get fit score, matched/missing skills (color-coded: green for matched, red for missing), and personalized improvement suggestions
-   - Results displayed within the feature card
+4. **Analyze Match & Generate Cover Letter:**
+   - Click "💼 Excited about a specific role? Share the job description with me and I'll dive deep into analyzing your perfect match, then craft a compelling cover letter that showcases your strengths!"
+   - This button appears immediately but is disabled until the initial job search completes
+   - Once enabled, click it to reveal a full-page job description input
+   - Paste the job description and click "✨ Let's Do This! Analyze My Match & Create My Perfect Cover Letter"
+   - **Analyze Match** results appear on the left
+   - **Cover Letter** appears on the right with a copy-to-clipboard button
+   - Both results are displayed side-by-side with resizable panels
 
-   **🔍 Web Job Search** (Core Feature)
-   - Requires: Resume (Job Description optional)
-   - Enter role, location, and keywords (all optional)
-   - Get top 3 matching jobs ranked by fit score with detailed match analysis
-   - Results displayed within the feature card
+5. **Navigation:**
+   - Use "🔄 Found Another Great Opportunity? I'm Ready to Analyze It for You!" to analyze a different job
+   - Use "🔁 Want to review your resume strengths or search more jobs? Let's jump back." to return to the main results view
 
-   **📊 Resume Strength Analysis** (AI-Powered Tool)
-   - Requires: Resume only
-   - Get comprehensive resume quality assessment, ATS compatibility score, strengths, weaknesses, and improvement suggestions
-   - Results displayed within the feature card
-
-   **✍️ AI Cover Letter Generator** (AI-Powered Tool)
-   - Requires: Resume + Job Description
-   - Click "📝 Fill in Job Description" to expand JD input
-   - Button changes to "✨ Generate Cover Letter" after JD input appears
-   - Generates personalized cover letter body text (no greeting/closing - just the content)
-   - Company name automatically extracted from job description
-   - One-click copy to clipboard functionality
-   - Results displayed within the feature card
-
-**Note:** All features can run independently and simultaneously. Results are displayed within their respective feature cards, allowing you to use multiple features at once.
+**Note:** The interface uses progressive disclosure - features appear and disappear smoothly as you progress through the workflow. All content fits within one page with internal scrolling for job results and long content areas.
 
 ## 🏗️ Architecture
 

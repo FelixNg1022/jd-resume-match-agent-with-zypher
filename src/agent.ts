@@ -694,9 +694,20 @@ Output JSON only:
       const skillCount = skills.length;
       const overallScore = Math.min(100, Math.max(0, Math.round((skillCount / 20) * 100)));
       
-      const fallbackSummary = failureReason 
-        ? `Basic resume analysis completed. AI analysis unavailable (${failureReason}). Using fallback parser.`
-        : "Basic resume analysis completed. Consider using AI analysis for more detailed insights.";
+      // Create user-friendly fallback message without technical error details
+      let fallbackSummary = "Basic resume analysis completed. Consider using AI analysis for more detailed insights.";
+      if (failureReason) {
+        // Only show user-friendly error messages, not technical JSON parsing errors
+        if (failureReason.includes("quota") || failureReason.includes("rate limit")) {
+          fallbackSummary = "Basic resume analysis completed. AI analysis temporarily unavailable due to high demand. Using fallback parser.";
+        } else if (failureReason.includes("auth") || failureReason.includes("API key")) {
+          fallbackSummary = "Basic resume analysis completed. AI analysis unavailable due to configuration issue. Using fallback parser.";
+        } else if (failureReason.includes("JSON") || failureReason.includes("token")) {
+          fallbackSummary = "Basic resume analysis completed. AI analysis temporarily unavailable. Using fallback parser.";
+        } else {
+          fallbackSummary = "Basic resume analysis completed. AI analysis temporarily unavailable. Using fallback parser.";
+        }
+      }
       
       analysis = {
         overall_score: overallScore,
